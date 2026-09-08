@@ -1,0 +1,376 @@
+/* ===== Country map (derived from embedded phone prefixes) ===== */
+const COUNTRIES = {
+  '62':'Indonesia','60':'Malaysia','63':'Philippines','65':'Singapore',
+  '66':'Thailand','84':'Vietnam','91':'India','998':'Uzbekistan',
+  '1':'United States','44':'United Kingdom','61':'Australia'
+};
+function dialInfo(digits){
+  for(const code of ['998','91','66','84','65','63','62','61','60','44','1']){
+    if(digits.startsWith(code)) return {code:'+'+code, country:COUNTRIES[code]};
+  }
+  return null;
+}
+// normalize a raw phone from the spreadsheet into digits w/ country code
+function normalizePhone(raw){
+  if(raw==null) return {ok:false, digits:'', pretty:'', code:null, country:null, note:null};
+  let s=String(raw).trim();
+  let note=null;
+  if(/[\u2010-\u2015\u2212]/.test(s)) note='format';        // unicode dashes
+  if(/\.0$/.test(s)){ s=s.replace(/\.0$/,''); note='excel'; } // excel number artifact
+  let d=s.replace(/[^0-9]/g,'');
+  if(!d) return {ok:false, digits:'', pretty:s, code:null, country:null, note:null};
+  if(d.startsWith('0')) d='62'+d.slice(1);                    // local 08.. -> 62..
+  else if(d.startsWith('8')) d='62'+d;                        // bare 8.. -> 62..
+  const info=dialInfo(d);
+  const local = info ? d.slice(info.code.length-1) : d;
+  return {ok:true, digits:d, pretty:local, code:info?info.code:null, country:info?info.country:null, note};
+}
+
+/* ===== Import dataset (real rows from “Inquiry Records Exsample.xlsx” + injected edge cases) ===== */
+/* sheet columns: Date, Phone Number, Name(Optional), Source Ads, Age Group, Domisili, Chat(status), Notes */
+const RAW = [
+  {r:3,  date:'2026-08-01', phone:'85271947194.0',     name:null,        source:'Others Admin', chat:'C1'},
+  {r:4,  date:null,         phone:'62 858-8190-5895',  name:'Andaleeb',  source:'Unknown',      chat:'C3'},
+  {r:5,  date:'2026-08-02', phone:'+62 812-1346-1452', name:'Ika',       source:'Instagram',    chat:'C2'},
+  {r:6,  date:null,         phone:'+62 812-1346-1452', name:'Rian',      source:'Facebook',     chat:'C1'}, // DUP of Ika
+  {r:7,  date:null,         phone:'62 856-8561-118',   name:null,        source:'Instagram',    chat:'C3'},
+  {r:8,  date:null,         phone:null,                name:'Budi',      source:'Facebook',     chat:'A'},  // EMPTY phone
+  {r:9,  date:'2026-08-04', phone:'0812 9452 7929 ',   name:null,        source:'Others Admin', chat:'A'},
+  {r:10, date:null,         phone:'62 852\u20111968\u20110024', name:'Sena', source:'Others Admin', chat:'D3'}, // unicode dash
+  {r:11, date:null,         phone:'81234861881.0',     name:null,        source:'Others Admin', chat:'D2'},
+  {r:12, date:null,         phone:'62 816-513-514',    name:'Linda',     source:'Web',          chat:'A'},
+  {r:13, date:'2026-08-06', phone:'62 813-6611-2700',  name:null,        source:'Instagram',    chat:'C2'},
+  {r:14, date:null,         phone:'62 812-1083-210',   name:'Sukirman',  source:'Walk in',      chat:'C1'},
+  {r:15, date:'2026-08-07', phone:'+62 813-3173-4534', name:null,        source:'Instagram',    chat:'C1'},
+  {r:16, date:'2026-08-08', phone:'62 813-3366-1588',  name:'Ayu Narita',source:'',             chat:'C4'}  // empty source
+];
+
+/* ===== Status system (from the Chat column funnel codes) ===== */
+// Official legend from Mr Dewa's spreadsheet (Code / Category / Criteria)
+const STATUS_LIST = [
+  {code:'A',  cat:'Registered',          lbl:'Registered', cls:'reg',   desc:'Sudah daftar untuk trial class.'},
+  {code:'B',  cat:'Waiting',             lbl:'Waiting',    cls:'wait',  desc:'Masih diskusi dulu dengan orang tua/keluarga.'},
+  {code:'C1', cat:'No Response',         lbl:'No Response',cls:'prog',  desc:'Pesan belum dibaca setelah balasan pertama kita.'},
+  {code:'C2', cat:'No Response',         lbl:'No Response',cls:'prog',  desc:'Sudah dibaca tapi tidak dibalas setelah reply pertama.'},
+  {code:'C3', cat:'No Response',         lbl:'No Response',cls:'prog',  desc:'Tidak merespons setelah ditanya/diberi info harga.'},
+  {code:'C4', cat:'No Response',         lbl:'No Response',cls:'prog',  desc:'Tidak merespons setelah ditawari jadwal trial.'},
+  {code:'C5', cat:'No Response',         lbl:'No Response',cls:'prog',  desc:'Tidak merespons setelah diminta data untuk trial.'},
+  {code:'D1', cat:'Issues',              lbl:'Issues',     cls:'issue', desc:'Terkendala harga.'},
+  {code:'D2', cat:'Issues',              lbl:'Issues',     cls:'issue', desc:'Terkendala lokasi / jarak.'},
+  {code:'D3', cat:'Issues',              lbl:'Issues',     cls:'issue', desc:'Terkendala jadwal.'},
+  {code:'D4', cat:'Issues',              lbl:'Issues',     cls:'issue', desc:'Terkendala durasi belajar / kurikulum.'},
+  {code:'E1', cat:'Low customer quality',lbl:'Low Quality',cls:'low',   desc:'Tidak tertarik / tidak paham coding.'},
+  {code:'E2', cat:'Low customer quality',lbl:'Low Quality',cls:'low',   desc:'Inquiry iseng / prank (bercanda, dll).'},
+  {code:'F1', cat:'Others',              lbl:'Others',     cls:'other', desc:'Lain-lain.'},
+  {code:'F2', cat:'Others',              lbl:'Others',     cls:'other', desc:'Lain-lain (butuh penjelasan tambahan).'}
+];
+const STATUS = {}; STATUS_LIST.forEach(s=>STATUS[s.code]=s);
+const CLS_COLOR = {reg:'#1c8f42',wait:'#c99411',prog:'#2586bd',issue:'#d5803b',low:'#c0563f',other:'#8a95a1'};
+function statusMeta(code){return STATUS[code]||{code,cat:'',lbl:(code||'—'),cls:'other',desc:''};}
+function statusPill(code){const s=statusMeta(code);return `<span class="pill ${s.cls}" title="${esc(s.code)} · ${esc(s.cat)} — ${esc(s.desc)}">${esc(s.lbl)}<span class="scode">${esc(s.code)}</span></span>`;}
+function statusCats(){const c=[];STATUS_LIST.forEach(s=>{if(!c.includes(s.cat))c.push(s.cat);});return c;}
+function statusOptions(){return statusCats().map(cat=>`<optgroup label="${cat}">`+STATUS_LIST.filter(s=>s.cat===cat).map(s=>`<option value="${s.code}">${s.code} — ${esc(s.desc)}</option>`).join('')+`</optgroup>`).join('');}
+
+/* ===== Existing dashboard rows (mirrors the current CMS screenshots) ===== */
+let dashRows = [
+  {branch:'HQ Training',student:'Jim Low Lap Hong',parent:'MY ON',source:'OTHER ADMIN',country:'Malaysia',code:'+60',phone:'0000000000',date:'01 Aug 2026',chat:'A'},
+  {branch:'HQ Training',student:'Isaac Hsu Li-Hang',parent:'MY ON',source:'OTHER ADMIN',country:'Malaysia',code:'+60',phone:'0000000000',date:'01 Aug 2026',chat:'A'},
+  {branch:'HQ Training',student:'Ilhan Kamil',parent:'MY ON',source:'OTHER ADMIN',country:'Malaysia',code:'+60',phone:'0000000000',date:'01 Aug 2026',chat:'A'},
+  {branch:'HQ Training',student:'Fathulloh',parent:'UZ FC',source:'OTHER ADMIN',country:'Uzbekistan',code:'+998',phone:'0000000000',date:'01 Aug 2026',chat:'A'},
+  {branch:'HQ Training',student:'Sasuke',parent:'Uchiha',source:'WALK IN',country:'Philippines',code:'+63',phone:'099712321123',date:'18 Aug 2026',chat:'C2'},
+  {branch:'HQ Training',student:'Adam',parent:'Zeny',source:'WALK IN',country:'Philippines',code:'+63',phone:'9060182075',date:'18 Aug 2026',chat:'C2'},
+  {branch:'HQ Training',student:'Adhwa',parent:'Tammy',source:'WA',country:'Indonesia',code:'+62',phone:'81213694239',date:'18 Aug 2026',chat:'A'},
+  {branch:'HQ Training',student:'Dewa',parent:"Dewa's Dad",source:'WA',country:'Indonesia',code:'+62',phone:'81231241441',date:'—',chat:'C1'}
+];
+
+function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function renderDash(){
+  const tb=document.getElementById('tbody');
+  tb.innerHTML = dashRows.map((x,i)=>`<tr class="${x._new?'newrow':''}">
+    <td>${esc(x.branch)}</td>
+    <td>${esc(x.student)||'<span class=miss>—</span>'}</td>
+    <td>${esc(x.parent)||'<span class=miss>—</span>'}</td>
+    <td>${esc(x.source)||'<span class=miss>—</span>'}</td>
+    <td>${esc(x.country)||'<span class=miss>—</span>'}</td>
+    <td>${esc(x.code)||'<span class=miss>—</span>'}</td>
+    <td>${x.phone?esc(x.phone):'<span class=miss>belum diisi</span>'}</td>
+    <td>${esc(x.date)}</td>
+    <td>${statusPill(x.chat)}${x._incomplete?' <span class="pill warn" title="Perlu dilengkapi di CMS">⚠ Perlu dilengkapi</span>':''}</td>
+    <td style="position:relative"><button class="dotsbtn" onclick="openActionMenu(event,${i})">⋯</button></td>
+  </tr>`).join('');
+  document.getElementById('rangelbl').textContent = `1-${Math.min(10,dashRows.length)} of ${73+dashRows.length}`;
+}
+renderDash();
+
+/* ===== Validation engine ===== */
+// field importance: phone = FATAL identifier; date/source/status = recommended (skippable); name = optional
+let VROWS = [];
+function validate(){
+  const seen = {}; // normalized digits -> {row, who}
+  // seed with existing dashboard phones so cross-checks work too
+  VROWS = RAW.map(x=>{
+    const p = normalizePhone(x.phone);
+    const who = x.name || (p.ok? (p.code+' '+p.pretty) : 'Tanpa nama');
+    const issues = [];
+    let sev = 'ok';
+    // --- FATAL: phone ---
+    if(!p.ok){
+      sev='er';
+      issues.push({s:'e',col:'Phone Number',msg:'Nomor telepon <b>kosong</b>. Ini identitas unik — tanpa nomor, data bisa duplikat & tidak bisa dihubungi.',fix:'Isi nomornya, atau pakai Force Add untuk menambah dulu lalu lengkapi di CMS.'});
+    } else {
+      if(seen[p.digits]){
+        sev='er';
+        const o=seen[p.digits];
+        issues.push({s:'e',col:'Phone Number',msg:`Nomor telepon <b>sama persis</b> dengan Baris ${o.row} (${esc(o.who)}) — <b>${p.code} ${p.pretty}</b>. Dua orang berbeda tidak boleh punya nomor yang sama.`,fix:'Perbaiki salah satu nomor, atau Force Add jika memang disengaja.'});
+      } else {
+        seen[p.digits]={row:x.r,who};
+      }
+      // derived, so NOT an error anymore (this is the key fix)
+      issues.push({s:'i',col:'Country / Phone Code',msg:`Otomatis terdeteksi dari nomor: <b>${p.country||'?'} (${p.code||'?'})</b>.`,fix:null});
+      if(p.note==='format') issues.push({s:'i',col:'Phone Number',msg:'Format dirapikan otomatis (tanda hubung khusus diganti).',fix:null});
+      if(p.note==='excel') issues.push({s:'i',col:'Phone Number',msg:'Angka Excel <code>.0</code> dibersihkan otomatis.',fix:null});
+    }
+    // --- recommended (skippable) ---
+    if(!x.date){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',col:'Inquiry Date',msg:'Tanggal inquiry kosong.',fix:'Boleh di-skip — bisa dilengkapi nanti di CMS.'}); }
+    if(!x.source){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',col:'Source',msg:'Sumber lead kosong.',fix:'Boleh di-skip — bisa dilengkapi nanti di CMS.'}); }
+    if(!x.chat){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',col:'Status',msg:'Status (kode chat) kosong.',fix:'Boleh di-skip — default “New Lead”.'}); }
+    // --- optional (info only) ---
+    if(!x.name) issues.push({s:'i',col:'Student Name (Optional)',msg:'Nama tidak diisi. Ini kolom opsional — aman.',fix:null});
+    return {raw:x, p, who, issues, sev, force:false};
+  });
+  paint();
+}
+
+function counts(){
+  let ok=0,wr=0,er=0;
+  VROWS.forEach(v=>{ if(v.sev==='er')er++; else if(v.sev==='wr')wr++; else ok++; });
+  return {ok,wr,er};
+}
+
+function paint(){
+  const c=counts();
+  document.getElementById('cOk').textContent=c.ok;
+  document.getElementById('cWr').textContent=c.wr;
+  document.getElementById('cEr').textContent=c.er;
+  const skip=document.getElementById('skipToggle').checked;
+  const filt=document.querySelector('.chip.on').dataset.f;
+
+  const list=document.getElementById('rowlist');
+  list.innerHTML = VROWS.filter(v=>filt==='all'|| (filt==='wr'&&v.sev==='wr') || (filt==='er'&&v.sev==='er')).map((v,i)=>{
+    const idx=VROWS.indexOf(v);
+    const stateLbl = v.sev==='er'?(v.force?'Force Add aktif':'Fatal'):(v.sev==='wr'?(skip?'Akan di-skip':'Perlu dilengkapi'):'Siap');
+    const stateCls = v.sev==='er'?(v.force?'wr':'er'):(v.sev==='wr'?(skip?'ok':'wr'):'ok');
+    const rowCls = v.sev==='er'&&!v.force?'er':(v.sev==='wr'&&!skip?'wr':(v.sev==='er'&&v.force?'wr':'ok'));
+    const issuesHtml = v.issues.map(is=>`<div class="iss ${is.s}"><span class="ib">${is.s==='e'?'✖':is.s==='w'?'!':'✓'}</span><div><span class="col">${esc(is.col)}:</span> ${is.msg}${is.fix?` <span class="fix">→ ${esc(is.fix)}</span>`:''}</div></div>`).join('');
+    const force = v.sev==='er'?`<div class="forcebar"><span class="warnico">⛔ Data fatal (identitas unik)</span><label class="switch"><input type="checkbox" ${v.force?'checked':''} onchange="toggleForce(${idx})"><span class="track"></span> Force Add — tambahkan tetap, perbaiki di CMS</label></div>`:'';
+    return `<div class="rowc ${rowCls}">
+      <div class="rhead">
+        <span class="rn">Baris ${v.raw.r}</span>
+        <span class="who">${esc(v.who)}</span>
+        <span class="rphone">${v.p.ok?esc(v.p.code+' '+v.p.pretty):'no phone'}</span>
+        <span class="rstate ${stateCls}">${stateLbl}</span>
+      </div>
+      <div class="issues">${issuesHtml}</div>
+      ${force}
+    </div>`;
+  }).join('');
+
+  // footer summary + Add button
+  const willAdd = VROWS.filter(v=> v.sev==='ok' || (v.sev==='wr'&&skip) || (v.sev==='er'&&v.force)).length;
+  const blocked = VROWS.filter(v=> v.sev==='er'&&!v.force).length;
+  const wskip = VROWS.filter(v=> v.sev==='wr').length;
+  document.getElementById('fsummary').innerHTML = `<b>${willAdd}</b> akan ditambahkan${skip&&wskip?` · <b>${wskip}</b> dilengkapi nanti`:''}${blocked?` · <b style="color:var(--red)">${blocked}</b> tertahan (butuh Force Add)`:''}`;
+  document.getElementById('addBtn').disabled = willAdd===0;
+  document.getElementById('addBtn').textContent = `Add Inquiry${willAdd?` (${willAdd})`:''}`;
+}
+
+window.toggleForce=function(i){ VROWS[i].force=!VROWS[i].force; paint(); };
+
+/* ===== Add to dashboard (new/incomplete rows go to top) ===== */
+function addInquiries(){
+  const skip=document.getElementById('skipToggle').checked;
+  const toAdd = VROWS.filter(v=> v.sev==='ok' || (v.sev==='wr'&&skip) || (v.sev==='er'&&v.force));
+  dashRows.forEach(r=>{r._new=false;});
+  const mapped = toAdd.map(v=>({
+    branch:'HQ Training',
+    student:v.raw.name||'',
+    parent:'',
+    source:(v.raw.source||'').toUpperCase(),
+    country:v.p.country||'',
+    code:v.p.code||'',
+    phone:v.p.ok?v.p.pretty:'',
+    date:v.raw.date?fmtDate(v.raw.date):'—',
+    chat:v.raw.chat||'A',
+    _new:true,
+    _incomplete: (v.sev!=='ok')
+  }));
+  dashRows = mapped.concat(dashRows);
+  renderDash();
+  closeModal();
+}
+function fmtDate(iso){const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const d=new Date(iso+'T00:00:00');return `${String(d.getDate()).padStart(2,'0')} ${m[d.getMonth()]} ${d.getFullYear()}`;}
+
+/* ===== Modal wiring ===== */
+const overlay=document.getElementById('overlay');
+function openModal(){overlay.classList.add('show');}
+function closeModal(){overlay.classList.remove('show');resetModal();}
+function resetModal(){document.getElementById('vresult').style.display='none';document.getElementById('addBtn').disabled=true;document.getElementById('addBtn').textContent='Add Inquiry';document.getElementById('fsummary').innerHTML='Tekan <b>Validate Inquiries</b> untuk mengecek dokumen.';}
+document.getElementById('importBtn').onclick=openModal;
+document.getElementById('closeX').onclick=closeModal;
+document.getElementById('closeBtn').onclick=closeModal;
+overlay.onclick=e=>{if(e.target===overlay)closeModal();};
+document.getElementById('validateBtn').onclick=()=>{document.getElementById('vresult').style.display='block';validate();};
+document.getElementById('skipToggle').onchange=paint;
+document.getElementById('addBtn').onclick=addInquiries;
+document.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));ch.classList.add('on');paint();});
+
+
+/* =====================================================================
+   PROBLEM 2, 3, 4 : New Inquiry modal + granular status + action menu
+   ===================================================================== */
+const SOURCES = ['Instagram','Facebook','WhatsApp (WA)','Walk in','Web','GMaps','Referral','Status Ads','Others Admin','Unknown'];
+const COUNTRY_CODES = [
+  {c:'Indonesia',d:'+62'},{c:'Malaysia',d:'+60'},{c:'Philippines',d:'+63'},{c:'Singapore',d:'+65'},
+  {c:'Thailand',d:'+66'},{c:'Vietnam',d:'+84'},{c:'Uzbekistan',d:'+998'},{c:'India',d:'+91'},{c:'Australia',d:'+61'}
+];
+const el = id => document.getElementById(id);
+let editIndex = null; // null = create, number = editing dashRows[idx]
+
+/* ---- toast ---- */
+let toastT;
+function toast(msg){const t=el('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ---- duplicate key helpers (Problem 3) ---- */
+function keyFromCodePhone(code,phone){
+  const cd=(code||'').replace(/[^0-9]/g,'');
+  let pn=(phone||'').replace(/[^0-9]/g,'');
+  if(pn.startsWith('0')) pn=pn.slice(1);
+  return cd+pn;
+}
+function findDuplicate(code,phone,skipIdx){
+  const key=keyFromCodePhone(code,phone);
+  if(key.replace((code||'').replace(/[^0-9]/g,''),'')==='') return null; // no local digits yet
+  for(let i=0;i<dashRows.length;i++){
+    if(i===skipIdx) continue;
+    const r=dashRows[i];
+    if(!r.phone) continue;
+    if(keyFromCodePhone(r.code,r.phone)===key) return {row:r,idx:i};
+  }
+  return null;
+}
+
+/* ---- populate selects ---- */
+function initForm(){
+  el('f_source').innerHTML = '<option value="">— Pilih sumber —</option>'+SOURCES.map(s=>`<option>${s}</option>`).join('');
+  el('f_country').innerHTML = COUNTRY_CODES.map(x=>`<option value="${x.d}">${x.c} (${x.d})</option>`).join('');
+  el('f_status').innerHTML = statusOptions();
+  el('f_country').onchange = ()=>{ const opt=COUNTRY_CODES.find(x=>x.d===el('f_country').value); el('f_code').textContent=opt?opt.d:'+62'; checkDup(); };
+  el('f_status').onchange = renderStatusDesc;
+  el('f_phone').addEventListener('input', checkDup);
+  renderStatusDesc();
+}
+function renderStatusDesc(){ const s=statusMeta(el('f_status').value); el('statusDesc').innerHTML = `<b>${esc(s.code)} · ${esc(s.cat)}</b> — ${esc(s.desc)}`; }
+
+/* ---- live duplicate check (Problem 3: block, no force) ---- */
+function checkDup(){
+  const code=el('f_code').textContent, phone=el('f_phone').value;
+  const localDigits=(phone||'').replace(/[^0-9]/g,'');
+  const wrap=el('phonewrap'), warn=el('dupWarn'), ok=el('dupOk');
+  wrap.classList.remove('err','ok'); warn.classList.remove('show'); ok.classList.remove('show');
+  if(!localDigits){ el('niSave').disabled=false; return; }
+  const dup=findDuplicate(code, phone, editIndex);
+  if(dup){
+    const who=dup.row.student||dup.row.parent||'(tanpa nama)';
+    wrap.classList.add('err'); warn.classList.add('show');
+    warn.innerHTML = `⛔ Nomor <b>${esc(code)} ${esc(phone)}</b> sudah terdaftar atas <b>${esc(who)}</b> (${esc(dup.row.branch)}, status ${esc(statusMeta(dup.row.chat).lbl)}). Nomor telepon adalah identitas unik — tidak boleh dipakai dua orang.`;
+    el('niSave').disabled=true;
+  } else {
+    wrap.classList.add('ok'); ok.classList.add('show'); el('niSave').disabled=false;
+  }
+}
+
+/* ---- open / close New Inquiry ---- */
+function openNewInquiry(){
+  editIndex=null; el('niTitle').textContent='New Inquiry';
+  el('f_branch').value='HQ Training'; el('f_source').value=''; el('f_student').value=''; el('f_parent').value='';
+  el('f_country').value='+62'; el('f_code').textContent='+62'; el('f_phone').value='';
+  el('f_date').value=''; el('f_sosmed').value=''; el('f_status').value='C1'; el('f_note').value='';
+  renderStatusDesc(); checkDup(); el('overlay2').classList.add('show');
+}
+function openEditInquiry(idx){
+  editIndex=idx; const r=dashRows[idx];
+  el('niTitle').textContent='Edit Inquiry';
+  el('f_branch').value=r.branch||'HQ Training';
+  el('f_source').value = SOURCES.find(s=>s.toUpperCase()===(r.source||'').toUpperCase())||'';
+  el('f_student').value=r.student||''; el('f_parent').value=r.parent||'';
+  const cc=COUNTRY_CODES.find(x=>x.d===r.code); el('f_country').value=cc?cc.d:'+62'; el('f_code').textContent=cc?cc.d:(r.code||'+62');
+  el('f_phone').value=r.phone||''; el('f_date').value=''; el('f_sosmed').value=r.sosmed||'';
+  el('f_status').value=r.chat||'A'; el('f_note').value=r.note||'';
+  renderStatusDesc(); checkDup(); el('overlay2').classList.add('show');
+}
+function closeNewInquiry(){ el('overlay2').classList.remove('show'); }
+
+function saveInquiry(){
+  const code=el('f_code').textContent, phone=el('f_phone').value.trim();
+  if(!phone){ toast('Nomor telepon wajib diisi.'); el('phonewrap').classList.add('err'); return; }
+  if(findDuplicate(code,phone,editIndex)){ toast('Tidak bisa disimpan — nomor telepon duplikat.'); return; }
+  const cc=COUNTRY_CODES.find(x=>x.d===code);
+  const rec={
+    branch:el('f_branch').value, student:el('f_student').value.trim(), parent:el('f_parent').value.trim(),
+    source:(el('f_source').value||'').toUpperCase(), country:cc?cc.c:'', code:code,
+    phone:phone.replace(/[^0-9]/g,'').replace(/^0/,''), sosmed:el('f_sosmed').value.trim(),
+    date: el('f_date').value?fmtDate(el('f_date').value):'—', chat:el('f_status').value, note:el('f_note').value.trim()
+  };
+  if(editIndex!=null){ dashRows[editIndex]={...dashRows[editIndex],...rec}; toast('Inquiry diperbarui.'); }
+  else { dashRows.forEach(r=>r._new=false); rec._new=true; dashRows.unshift(rec); toast('Inquiry baru ditambahkan ke baris teratas.'); }
+  renderDash(); closeNewInquiry();
+}
+
+/* =====================================================================
+   Action menu (Problem 4: specific actions + granular status)
+   ===================================================================== */
+let menuIdx=null;
+function openActionMenu(ev, idx){
+  ev.stopPropagation(); menuIdx=idx; const r=dashRows[idx]; const m=el('actionMenu');
+  let lastCat=null, statusItems='';
+  STATUS_LIST.forEach(s=>{
+    if(s.cat!==lastCat){statusItems+=`<div class="sep">${s.cat}</div>`;lastCat=s.cat;}
+    statusItems+=`<div class="st" onclick="setStatus(${idx},'${s.code}')">
+      <span class="dot" style="background:${CLS_COLOR[s.cls]}"></span>
+      <div><div class="lbl">${s.code} <span style="color:#aab3bd;font-weight:600">${s.lbl}</span></div><div class="d">${esc(s.desc)}</div></div>
+      ${r.chat===s.code?'<span class="chk">✓</span>':''}
+    </div>`;
+  });
+  m.innerHTML = `
+    <div class="mi" onclick="actDetail(${idx})"><span class="k">👁</span> View Detail</div>
+    <div class="mi" onclick="actEdit(${idx})"><span class="k">✎</span> Edit Inquiry</div>
+    <div class="divider"></div>
+    <div class="sep" style="color:#3a444c;font-size:11px">UBAH STATUS · sesuai kode spreadsheet</div>
+    ${statusItems}
+    <div class="divider"></div>
+    <div class="mi red" onclick="actDelete(${idx})"><span class="k">🗑</span> Delete</div>`;
+  m.classList.add('show');
+  const btn=ev.currentTarget.getBoundingClientRect(); const mw=262;
+  let left=btn.right-mw; if(left<10)left=10; if(left+mw>window.innerWidth-10)left=window.innerWidth-mw-10;
+  let top=btn.bottom+6; const mh=m.offsetHeight;
+  if(top+mh>window.innerHeight-10) top=Math.max(10, btn.top-mh-6);
+  m.style.left=left+'px'; m.style.top=top+'px';
+}
+function closeActionMenu(){ el('actionMenu').classList.remove('show'); menuIdx=null; }
+window.setStatus=function(idx,code){ dashRows[idx].chat=code; renderDash(); closeActionMenu(); toast('Status → '+statusMeta(code).lbl); };
+window.actDetail=function(idx){ const r=dashRows[idx]; closeActionMenu(); toast(`${r.student||r.phone} · ${statusMeta(r.chat).lbl} · ${r.code} ${r.phone||'—'}`); };
+window.actEdit=function(idx){ closeActionMenu(); openEditInquiry(idx); };
+window.actDelete=function(idx){ const r=dashRows[idx]; closeActionMenu(); dashRows.splice(idx,1); renderDash(); toast('Inquiry "'+(r.student||r.phone)+'" dihapus.'); };
+window.openActionMenu=openActionMenu;
+
+/* global close handlers */
+document.addEventListener('click', e=>{ if(!e.target.closest('.amenu') && !e.target.closest('.dotsbtn')) closeActionMenu(); });
+document.addEventListener('scroll', closeActionMenu, true);
+
+/* wire New Inquiry modal */
+el('newBtn').onclick=openNewInquiry;
+el('niX').onclick=closeNewInquiry; el('niClose').onclick=closeNewInquiry;
+el('niSave').onclick=saveInquiry;
+el('overlay2').onclick=e=>{ if(e.target===el('overlay2')) closeNewInquiry(); };
+initForm();
