@@ -96,6 +96,8 @@ function renderDash(){
     <td>${esc(x.code)||'<span class=miss>—</span>'}</td>
     <td>${x.phone?esc(x.phone):'<span class=miss>belum diisi</span>'}</td>
     <td>${esc(x.date)}</td>
+    <td class="sm-cell">${x.sosmed?esc(x.sosmed):'<span class=miss>—</span>'}</td>
+    <td class="note-cell"${x.note?' title="'+esc(x.note)+'"':''}>${x.note?esc(x.note):'<span class=miss>—</span>'}</td>
     <td>${statusPill(x.chat)}${x._incomplete?' <span class="pill warn" title="Perlu dilengkapi di CMS">⚠ Perlu dilengkapi</span>':''}</td>
     <td style="position:relative"><button class="dotsbtn" onclick="openActionMenu(event,${i})">⋯</button></td>
   </tr>`).join('');
@@ -117,26 +119,26 @@ function validate(){
     // --- FATAL: phone ---
     if(!p.ok){
       sev='er';
-      issues.push({s:'e',col:'Phone Number',msg:'Nomor telepon <b>kosong</b>. Ini identitas unik — tanpa nomor, data bisa duplikat & tidak bisa dihubungi.',fix:'Isi nomornya, atau pakai Force Add untuk menambah dulu lalu lengkapi di CMS.'});
+      issues.push({s:'e',short:'Nomor telepon kosong',fix:'wajib diisi (identitas unik) — atau Force Add'});
     } else {
       if(seen[p.digits]){
         sev='er';
         const o=seen[p.digits];
-        issues.push({s:'e',col:'Phone Number',msg:`Nomor telepon <b>sama persis</b> dengan Baris ${o.row} (${esc(o.who)}) — <b>${p.code} ${p.pretty}</b>. Dua orang berbeda tidak boleh punya nomor yang sama.`,fix:'Perbaiki salah satu nomor, atau Force Add jika memang disengaja.'});
+        issues.push({s:'e',short:`Nomor duplikat dengan Baris ${o.row} (${esc(o.who)})`,fix:'perbaiki salah satu, atau Force Add'});
       } else {
         seen[p.digits]={row:x.r,who};
       }
-      // derived, so NOT an error anymore (this is the key fix)
-      issues.push({s:'i',col:'Country / Phone Code',msg:`Otomatis terdeteksi dari nomor: <b>${p.country||'?'} (${p.code||'?'})</b>.`,fix:null});
-      if(p.note==='format') issues.push({s:'i',col:'Phone Number',msg:'Format dirapikan otomatis (tanda hubung khusus diganti).',fix:null});
-      if(p.note==='excel') issues.push({s:'i',col:'Phone Number',msg:'Angka Excel <code>.0</code> dibersihkan otomatis.',fix:null});
+      // derived from phone → shown as small auto-chips, not errors
+      issues.push({s:'i',chip:`🌐 ${p.country||'?'} (${p.code||'?'})`});
+      if(p.note==='format') issues.push({s:'i',chip:'format dirapikan'});
+      if(p.note==='excel') issues.push({s:'i',chip:'.0 dibersihkan'});
     }
     // --- recommended (skippable) ---
-    if(!x.date){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',col:'Inquiry Date',msg:'Tanggal inquiry kosong.',fix:'Boleh di-skip — bisa dilengkapi nanti di CMS.'}); }
-    if(!x.source){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',col:'Source',msg:'Sumber lead kosong.',fix:'Boleh di-skip — bisa dilengkapi nanti di CMS.'}); }
-    if(!x.chat){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',col:'Status',msg:'Status (kode chat) kosong.',fix:'Boleh di-skip — default “New Lead”.'}); }
+    if(!x.date){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',short:'Inquiry Date kosong',fix:'bisa dilengkapi nanti'}); }
+    if(!x.source){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',short:'Source kosong',fix:'bisa dilengkapi nanti'}); }
+    if(!x.chat){ if(sev!=='er')sev=sev==='ok'?'wr':sev; issues.push({s:'w',short:'Status kosong',fix:'default akan dipakai'}); }
     // --- optional (info only) ---
-    if(!x.name) issues.push({s:'i',col:'Student Name (Optional)',msg:'Nama tidak diisi. Ini kolom opsional — aman.',fix:null});
+    if(!x.name) issues.push({s:'i',chip:'nama kosong · opsional'});
     return {raw:x, p, who, issues, sev, force:false};
   });
   paint();
@@ -162,8 +164,11 @@ function paint(){
     const stateLbl = v.sev==='er'?(v.force?'Force Add aktif':'Fatal'):(v.sev==='wr'?(skip?'Akan di-skip':'Perlu dilengkapi'):'Siap');
     const stateCls = v.sev==='er'?(v.force?'wr':'er'):(v.sev==='wr'?(skip?'ok':'wr'):'ok');
     const rowCls = v.sev==='er'&&!v.force?'er':(v.sev==='wr'&&!skip?'wr':(v.sev==='er'&&v.force?'wr':'ok'));
-    const issuesHtml = v.issues.map(is=>`<div class="iss ${is.s}"><span class="ib">${is.s==='e'?'✖':is.s==='w'?'!':'✓'}</span><div><span class="col">${esc(is.col)}:</span> ${is.msg}${is.fix?` <span class="fix">→ ${esc(is.fix)}</span>`:''}</div></div>`).join('');
-    const force = v.sev==='er'?`<div class="forcebar"><span class="warnico">⛔ Data fatal (identitas unik)</span><label class="switch"><input type="checkbox" ${v.force?'checked':''} onchange="toggleForce(${idx})"><span class="track"></span> Force Add — tambahkan tetap, perbaiki di CMS</label></div>`:'';
+    const chips=v.issues.filter(is=>is.s==='i');
+    const probs=v.issues.filter(is=>is.s!=='i');
+    const chipsHtml = chips.length?`<div class="rchips">`+chips.map(c=>`<span class="ac">${c.chip}</span>`).join('')+`</div>`:'';
+    const probsHtml = probs.length?`<div class="rprobs">`+probs.map(pb=>`<div class="pr ${pb.s}"><span class="pi">${pb.s==='e'?'✖':'!'}</span><span class="pt">${pb.short}${pb.fix?` <span class="fix">· ${esc(pb.fix)}</span>`:''}</span></div>`).join('')+`</div>`:'';
+    const force = v.sev==='er'?`<div class="forcebar"><span class="warnico">⛔ Fatal</span><label class="switch"><input type="checkbox" ${v.force?'checked':''} onchange="toggleForce(${idx})"><span class="track"></span> Force Add — tambah tetap, perbaiki di CMS</label></div>`:'';
     return `<div class="rowc ${rowCls}">
       <div class="rhead">
         <span class="rn">Baris ${v.raw.r}</span>
@@ -171,7 +176,7 @@ function paint(){
         <span class="rphone">${v.p.ok?esc(v.p.code+' '+v.p.pretty):'no phone'}</span>
         <span class="rstate ${stateCls}">${stateLbl}</span>
       </div>
-      <div class="issues">${issuesHtml}</div>
+      ${chipsHtml}${probsHtml}
       ${force}
     </div>`;
   }).join('');
@@ -260,17 +265,54 @@ function findDuplicate(code,phone,skipIdx){
   return null;
 }
 
-/* ---- populate selects ---- */
+/* ---- generic custom picker (matches status picker visual) ---- */
+const PICKERS={};
+function makePicker(id, options, opts){
+  opts=opts||{};
+  PICKERS[id]={options, onChange:opts.onChange, placeholder:opts.placeholder||'Pilih…'};
+  const panel=el(id+'_panel');
+  panel.innerHTML=options.map(o=>`<div class="ddi" data-v="${esc(o.value)}" onclick="pickVal('${id}',this.getAttribute('data-v'))">${esc(o.label)}<span class="ddck">✓</span></div>`).join('');
+  el(id+'_btn').onclick=e=>{ e.stopPropagation(); const wrap=el(id+'_pick'); const willOpen=!wrap.classList.contains('open'); closeAllPickers(); if(willOpen)wrap.classList.add('open'); };
+  syncPicker(id);
+}
+window.pickVal=function(id,v){ el(id).value=v; el(id+'_pick').classList.remove('open'); syncPicker(id); const p=PICKERS[id]; if(p&&p.onChange)p.onChange(v); };
+function syncPicker(id){
+  const p=PICKERS[id]; if(!p)return; const v=el(id).value;
+  const opt=p.options.find(o=>String(o.value)===String(v));
+  const lbl=el(id+'_label'); lbl.textContent=opt?opt.label:p.placeholder; lbl.classList.toggle('ph',!opt);
+  el(id+'_panel').querySelectorAll('.ddi').forEach(it=>it.classList.toggle('sel', it.getAttribute('data-v')===String(v)));
+}
+function closeAllPickers(){ document.querySelectorAll('.pick').forEach(p=>p.classList.remove('open')); const sp=el('statusPick'); if(sp)sp.classList.remove('open'); }
+document.addEventListener('click', e=>{ if(!e.target.closest('.pick')) document.querySelectorAll('.pick').forEach(p=>p.classList.remove('open')); });
+
+/* ---- populate selects (custom pickers) ---- */
 function initForm(){
-  el('f_source').innerHTML = '<option value="">— Pilih sumber —</option>'+SOURCES.map(s=>`<option>${s}</option>`).join('');
-  el('f_country').innerHTML = COUNTRY_CODES.map(x=>`<option value="${x.d}">${x.c} (${x.d})</option>`).join('');
-  el('f_status').innerHTML = statusOptions();
-  el('f_country').onchange = ()=>{ const opt=COUNTRY_CODES.find(x=>x.d===el('f_country').value); el('f_code').textContent=opt?opt.d:'+62'; checkDup(); };
-  el('f_status').onchange = renderStatusDesc;
+  makePicker('f_branch',[{value:'HQ Training',label:'HQ Training'},{value:'Cibubur',label:'Cibubur'},{value:'Kelapa Gading',label:'Kelapa Gading'},{value:'Transyogi',label:'Transyogi'}],{placeholder:'Pilih branch'});
+  makePicker('f_source',SOURCES.map(s=>({value:s,label:s})),{placeholder:'Pilih sumber'});
+  makePicker('f_country',COUNTRY_CODES.map(x=>({value:x.d,label:`${x.c} (${x.d})`})),{placeholder:'Pilih negara',onChange:(v)=>{ el('f_code').textContent=v||'+62'; checkDup(); }});
+  buildStatusPicker();
   el('f_phone').addEventListener('input', checkDup);
   renderStatusDesc();
 }
-function renderStatusDesc(){ const s=statusMeta(el('f_status').value); el('statusDesc').innerHTML = `<b>${esc(s.code)} · ${esc(s.cat)}</b> — ${esc(s.desc)}`; }
+function buildStatusPicker(){
+  const panel=el('spPanel'); if(!panel) return;
+  let last=null, html='';
+  STATUS_LIST.forEach(s=>{
+    if(s.cat!==last){ html+=`<div class="spgroup">${esc(s.cat)}</div>`; last=s.cat; }
+    html+=`<div class="spitem" data-code="${s.code}" onclick="pickStatus('${s.code}')"><span class="d2" style="background:${CLS_COLOR[s.cls]}"></span><div class="txt"><div><span class="code2">${s.code}</span><span class="cat2">${esc(s.lbl)}</span></div><div class="desc2">${esc(s.desc)}</div></div><span class="ck">✓</span></div>`;
+  });
+  panel.innerHTML=html;
+  el('spBtn').onclick=e=>{ e.stopPropagation(); const willOpen=!el('statusPick').classList.contains('open'); closeAllPickers(); if(willOpen)el('statusPick').classList.add('open'); };
+  document.addEventListener('click', e=>{ if(!e.target.closest('#statusPick')) el('statusPick').classList.remove('open'); });
+}
+window.pickStatus=function(code){ el('f_status').value=code; el('statusPick').classList.remove('open'); renderStatusDesc(); };
+function renderStatusDesc(){
+  const code=el('f_status').value; const s=statusMeta(code);
+  el('statusDesc').innerHTML = `<b>${esc(s.code)} · ${esc(s.cat)}</b> — ${esc(s.desc)}`;
+  if(el('spDot')) el('spDot').style.background=CLS_COLOR[s.cls]||'#ccc';
+  if(el('spLabel')) el('spLabel').innerHTML = code?`<b>${esc(s.code)}</b> · ${esc(s.cat)}`:'Pilih status…';
+  document.querySelectorAll('#spPanel .spitem').forEach(it=>{ it.classList.toggle('sel', it.dataset.code===code); });
+}
 
 /* ---- live duplicate check (Problem 3: block, no force) ---- */
 function checkDup(){
@@ -296,6 +338,7 @@ function openNewInquiry(){
   el('f_branch').value='HQ Training'; el('f_source').value=''; el('f_student').value=''; el('f_parent').value='';
   el('f_country').value='+62'; el('f_code').textContent='+62'; el('f_phone').value='';
   el('f_date').value=''; el('f_sosmed').value=''; el('f_status').value='C1'; el('f_note').value='';
+  ['f_branch','f_source','f_country'].forEach(syncPicker);
   renderStatusDesc(); checkDup(); el('overlay2').classList.add('show');
 }
 function openEditInquiry(idx){
@@ -307,6 +350,7 @@ function openEditInquiry(idx){
   const cc=COUNTRY_CODES.find(x=>x.d===r.code); el('f_country').value=cc?cc.d:'+62'; el('f_code').textContent=cc?cc.d:(r.code||'+62');
   el('f_phone').value=r.phone||''; el('f_date').value=''; el('f_sosmed').value=r.sosmed||'';
   el('f_status').value=r.chat||'A'; el('f_note').value=r.note||'';
+  ['f_branch','f_source','f_country'].forEach(syncPicker);
   renderStatusDesc(); checkDup(); el('overlay2').classList.add('show');
 }
 function closeNewInquiry(){ el('overlay2').classList.remove('show'); }
@@ -359,14 +403,38 @@ function openActionMenu(ev, idx){
 }
 function closeActionMenu(){ el('actionMenu').classList.remove('show'); menuIdx=null; }
 window.setStatus=function(idx,code){ dashRows[idx].chat=code; renderDash(); closeActionMenu(); toast('Status → '+statusMeta(code).lbl); };
-window.actDetail=function(idx){ const r=dashRows[idx]; closeActionMenu(); toast(`${r.student||r.phone} · ${statusMeta(r.chat).lbl} · ${r.code} ${r.phone||'—'}`); };
+const DICON={
+ building:'<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M9 8h.01M12 8h.01M15 8h.01M9 12h.01M12 12h.01M15 12h.01"/></svg>',
+ user:'<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+ users:'<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>',
+ tag:'<svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+ globe:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+ hash:'<svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+ phone:'<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+ calendar:'<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2"/><line x1="16" y1="2.5" x2="16" y2="6.5"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+ at:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>'
+};
+let detailIdx=null;
+function closeDetail(){ el('overlay3').classList.remove('show'); }
+window.actDetail=function(idx){
+  closeActionMenu(); detailIdx=idx; const r=dashRows[idx]; const s=statusMeta(r.chat);
+  const name=r.student||r.parent||'(Tanpa nama)';
+  const ini=((name.replace(/[^A-Za-z ]/g,'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join(''))||'?').toUpperCase();
+  el('dAva').textContent=ini; el('dName').textContent=name;
+  el('dSub').innerHTML=`${statusPill(r.chat)}<span class="dphone">${esc(r.code||'')} ${esc(r.phone||'—')}</span>`;
+  const items=[['Branch',r.branch,'building'],['Student Name',r.student,'user'],['Parent Name',r.parent,'users'],['Source',r.source,'tag'],['Country',r.country,'globe'],['Phone Code',r.code,'hash'],['Phone Number',r.phone,'phone'],['Inquiry Date',r.date,'calendar'],['Social Media',r.sosmed,'at']];
+  el('dGrid').innerHTML=items.map(it=>`<div class="ditem"><div class="dic">${DICON[it[2]]||''}</div><div><div class="dlabel">${it[0]}</div><div class="dval${it[1]?'':' empty'}">${it[1]?esc(it[1]):'—'}</div></div></div>`).join('');
+  el('dStatusDesc').innerHTML=`${statusPill(r.chat)}<span class="dstatustxt">${esc(s.desc)}</span>`;
+  el('dNote').innerHTML=r.note?esc(r.note):'<span class="empty">Belum ada catatan.</span>';
+  el('overlay3').classList.add('show');
+};
 window.actEdit=function(idx){ closeActionMenu(); openEditInquiry(idx); };
 window.actDelete=function(idx){ const r=dashRows[idx]; closeActionMenu(); dashRows.splice(idx,1); renderDash(); toast('Inquiry "'+(r.student||r.phone)+'" dihapus.'); };
 window.openActionMenu=openActionMenu;
 
 /* global close handlers */
 document.addEventListener('click', e=>{ if(!e.target.closest('.amenu') && !e.target.closest('.dotsbtn')) closeActionMenu(); });
-document.addEventListener('scroll', closeActionMenu, true);
+document.addEventListener('scroll', function(e){ const t=e.target; if(t && t.nodeType===1 && t.closest && t.closest('.amenu')) return; closeActionMenu(); }, true);
 
 /* wire New Inquiry modal */
 el('newBtn').onclick=openNewInquiry;
@@ -374,3 +442,8 @@ el('niX').onclick=closeNewInquiry; el('niClose').onclick=closeNewInquiry;
 el('niSave').onclick=saveInquiry;
 el('overlay2').onclick=e=>{ if(e.target===el('overlay2')) closeNewInquiry(); };
 initForm();
+
+/* wire Detail modal */
+el('dX').onclick=closeDetail; el('dClose').onclick=closeDetail;
+el('overlay3').onclick=e=>{ if(e.target===el('overlay3')) closeDetail(); };
+el('dEdit').onclick=()=>{ closeDetail(); openEditInquiry(detailIdx); };

@@ -75,7 +75,7 @@ body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;back
 .reset{color:var(--green);font-weight:500;cursor:pointer;white-space:nowrap;padding:0 4px}
 
 .tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;min-width:1180px}
+table{border-collapse:collapse;width:100%;min-width:1440px}
 thead th{background:#f6f8f9;color:#6b757e;font-size:11.5px;letter-spacing:.03em;font-weight:600;text-align:left;padding:16px 18px;white-space:nowrap;border-bottom:1px solid var(--line)}
 tbody td{padding:16px 18px;border-bottom:1px solid var(--line);color:#4a545c;white-space:nowrap;font-size:13.5px}
 tbody tr:hover{background:#fafbfc}
@@ -212,11 +212,11 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 .amenu .mi.red{color:var(--red)}
 .amenu .mi .k{width:18px;text-align:center}
 .amenu .sep{font-size:10.5px;letter-spacing:.1em;color:var(--muted2);font-weight:700;padding:9px 10px 4px}
-.amenu .st{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.amenu .st{display:flex;align-items:center;gap:9px;padding:6px 10px;border-radius:8px;cursor:pointer}
 .amenu .st:hover{background:#f6f8f9}
-.amenu .st .dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.amenu .st .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .amenu .st .lbl{font-size:13px;font-weight:600;color:#3a444c;line-height:1.2}
-.amenu .st .d{font-size:11px;color:var(--muted);line-height:1.3}
+.amenu .st .d{font-size:11px;color:var(--muted);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:188px}
 .amenu .st .chk{margin-left:auto;color:var(--green);font-weight:700}
 .amenu .divider{height:1px;background:var(--line);margin:5px 2px}
 /* toast */
@@ -229,6 +229,83 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 .pill.low{background:#fbe4de;color:#b23f27}
 .pill.other{background:#eceef0;color:#7d858c}
 .pill .scode{opacity:.6;font-weight:700;margin-left:5px;font-size:10px}
+/* import — compact row chips & problems */
+.rchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.ac{font-size:11px;color:#5c666e;background:#f1f4f6;border:1px solid var(--line2);border-radius:14px;padding:2px 9px;font-weight:500;white-space:nowrap}
+.rprobs{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.pr{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.4}
+.pr .pi{flex-shrink:0;width:17px;height:17px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#fff;margin-top:1px}
+.pr.w .pi{background:var(--orange)}
+.pr.e .pi{background:var(--red)}
+.pr.w .pt{color:#8a5a1a}
+.pr.e .pt{color:#b23f27;font-weight:600}
+.pr .fix{color:var(--muted);font-weight:400;font-style:italic}
+/* status picker (New Inquiry) */
+.statuspick{position:relative}
+.spbtn{width:100%;height:44px;border:1px solid var(--line2);border-radius:10px;background:#fff;display:flex;align-items:center;gap:10px;padding:0 12px;cursor:pointer;font-family:inherit;font-size:13.5px;color:#333}
+.spbtn:hover{border-color:#cdd5db}
+.statuspick.open .spbtn{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,164,71,.12)}
+.spdot{width:11px;height:11px;border-radius:50%;background:#ccc;flex-shrink:0}
+.splabel{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#3a444c}
+.splabel b{color:#2b3843}
+.spcaret{color:var(--muted2);transition:.15s;font-size:12px}
+.statuspick.open .spcaret{transform:rotate(180deg)}
+.sppanel{display:none;margin-top:6px;border:1px solid var(--line2);border-radius:12px;background:#fff;box-shadow:var(--shadow);max-height:240px;overflow-y:auto;padding:6px}
+.statuspick.open .sppanel{display:block}
+.spgroup{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);font-weight:700;padding:8px 10px 4px}
+.spitem{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.spitem:hover{background:#f6f8f9}
+.spitem.sel{background:var(--green-soft)}
+.spitem .d2{width:10px;height:10px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.spitem .code2{font-weight:700;color:#2b3843;font-size:13px}
+.spitem .cat2{color:#8a95a1;font-weight:600;font-size:12px;margin-left:5px}
+.spitem .desc2{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:1px}
+.spitem .ck{display:none;margin-left:auto;color:var(--green);font-weight:700}
+.spitem.sel .ck{display:inline}
+/* inline SVG icons */
+.ci{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;display:block}
+.bi{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ic-lg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cx,.spcaret{display:inline-flex;align-items:center}
+.note-cell{max-width:210px;overflow:hidden;text-overflow:ellipsis}
+.sm-cell{max-width:170px;overflow:hidden;text-overflow:ellipsis}
+/* generic custom picker */
+.pick{position:relative}
+.pickbtn{width:100%;height:44px;border:1px solid var(--line2);border-radius:10px;background:#fff;display:flex;align-items:center;gap:10px;padding:0 12px;cursor:pointer;font-family:inherit;font-size:13.5px;color:#333;text-align:left}
+.pickbtn:hover{border-color:#cdd5db}
+.pick.open .pickbtn{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,164,71,.12)}
+.picklabel{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#3a444c}
+.picklabel.ph{color:var(--muted2)}
+.pickcaret{color:var(--muted2);display:inline-flex;align-items:center;transition:.15s}
+.pick.open .pickcaret{transform:rotate(180deg)}
+.pickpanel{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:8;border:1px solid var(--line2);border-radius:12px;background:#fff;box-shadow:var(--shadow);max-height:230px;overflow-y:auto;padding:6px}
+.pick.open .pickpanel{display:block}
+.ddi{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:#3a444c}
+.ddi:hover{background:#f6f8f9}
+.ddi.sel{background:var(--green-soft);font-weight:600}
+.ddck{display:none;margin-left:auto;color:var(--green);font-weight:700}
+.ddi.sel .ddck{display:inline}
+/* detail modal */
+.modal.detail{max-width:620px}
+.dhero{position:relative;background:linear-gradient(135deg,#22a447,#178a3a);color:#fff;padding:26px 26px 22px;text-align:center}
+.dhero .dx{position:absolute;top:14px;right:16px;color:#fff;opacity:.9;font-size:22px;background:none;border:0;cursor:pointer;line-height:1}
+.dava{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;margin:0 auto 12px}
+.dhname{font-size:20px;font-weight:700}
+.dhsub{margin-top:9px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.dhsub .dphone{font-size:13px;opacity:.95}
+.dhsub .pill{background:rgba(255,255,255,.92)}
+.dsec-title{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);font-weight:700;margin:6px 2px 14px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.ditem{display:flex;gap:12px;align-items:flex-start}
+.ditem .dic{width:34px;height:34px;border-radius:10px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ditem .dic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dlabel{font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:2px}
+.dval{font-size:14px;color:#2b3843;font-weight:500;word-break:break-word}
+.dval.empty,.dnote .empty{color:var(--muted2);font-weight:400}
+.dblock{margin-top:16px;background:#f7f9fa;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.dnote{font-size:14px;color:#3a444c;line-height:1.5;margin-top:4px}
+.dstatus-wrap{margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dstatustxt{font-size:13px;color:var(--muted)}
 @media(max-width:900px){.sidebar{display:none}.vsum{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -247,7 +324,7 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
       <a><span class="ic">◐</span> Analytic</a>
       <a><span class="ic">☷</span> Accounting <span class="chev">›</span></a>
       <a><span class="ic">▤</span> Product <span class="chev">›</span></a>
-      <a><span class="ic">☻</span> Customer <span class="chev">˅</span></a>
+      <a><span class="ic">☻</span> Customer <span class="chev"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></a>
       <div class="sub">
         <a class="active"><span class="rad"></span> Inquiry</a>
         <a><span class="rad"></span> Student</a>
@@ -266,11 +343,11 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
     <div class="topbar">
       <div class="branch">
         <span class="lbl">Branch Availability</span>
-        <div class="select">HQ Training <span class="cx">˅</span></div>
+        <div class="select">HQ Training <span class="cx"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>
       </div>
-      <div class="select">Asia/Jakarta <span class="cx">˅</span></div>
-      <div class="iconbtn">☀</div>
-      <div class="iconbtn">␇</div>
+      <div class="select">Asia/Jakarta <span class="cx"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+      <div class="iconbtn"><svg class="ic-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="3.5" y1="3.5" x2="5.3" y2="5.3"/><line x1="18.7" y1="18.7" x2="20.5" y2="20.5"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="3.5" y1="20.5" x2="5.3" y2="18.7"/><line x1="18.7" y1="5.3" x2="20.5" y2="3.5"/></svg></div>
+      <div class="iconbtn"><svg class="ic-lg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
       <div class="avatar"></div>
     </div>
 
@@ -281,18 +358,18 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
           <p>Manages the inquiry from potential customer</p>
         </div>
         <div class="actions">
-          <button class="btn" id="exportBtn">⤓ Export Inquiry</button>
-          <button class="btn" id="importBtn">⤒ Import Inquiry</button>
-          <button class="btn solid" id="newBtn">+ New Inquiry</button>
+          <button class="btn" id="exportBtn"><svg class="bi" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Inquiry</button>
+          <button class="btn" id="importBtn"><svg class="bi" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import Inquiry</button>
+          <button class="btn solid" id="newBtn"><svg class="bi" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Inquiry</button>
         </div>
       </div>
 
       <div class="panel">
         <div class="filters">
-          <div class="field grow"><span>⚲</span><input placeholder="Search..."></div>
-          <div class="field"><span>Select Country</span><span style="margin-left:auto">˅</span></div>
-          <div class="field"><span>Filter by date</span><span style="margin-left:auto">▤</span></div>
-          <div class="field"><span>Newest</span><span style="margin-left:auto">˅</span></div>
+          <div class="field grow"><span style="color:var(--muted2);display:inline-flex"><svg class="ci" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><input placeholder="Search..."></div>
+          <div class="field"><span>Select Country</span><span style="margin-left:auto;color:var(--muted2);display:inline-flex"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+          <div class="field"><span>Filter by date</span><span style="margin-left:auto;color:var(--muted2);display:inline-flex"><svg class="ci" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2"/><line x1="16" y1="2.5" x2="16" y2="6.5"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span></div>
+          <div class="field"><span>Newest</span><span style="margin-left:auto;color:var(--muted2);display:inline-flex"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>
           <span class="reset">Reset Filter</span>
         </div>
         <div class="tablewrap">
@@ -300,14 +377,14 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
             <thead><tr>
               <th>BRANCH NAME</th><th>STUDENT NAME</th><th>PARENT NAME</th><th>SOURCE</th>
               <th>COUNTRY</th><th>PHONE CODE</th><th>PHONE NUMBER</th><th>INQUIRY DATE</th>
-              <th>STATUS</th><th>ACTION</th>
+              <th>SOCIAL MEDIA USERNAME</th><th>CONTACT NOTE</th><th>STATUS</th><th>ACTION</th>
             </tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
         <div class="tablefoot">
           <span>Items per page:</span>
-          <div class="select">10 <span class="cx">˅</span></div>
+          <div class="select">10 <span class="cx"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>
           <span id="rangelbl">1-10 of 81</span>
           <div class="pagenav"><button>⏮</button><button>‹</button><button>›</button><button>⏭</button></div>
         </div>
@@ -321,9 +398,9 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
   <div class="modal">
     <div class="mhead"><h2>Upload Inquiry</h2><button class="x" id="closeX">×</button></div>
     <div class="mbody">
-      <div class="step"><span class="num">1</span><span class="t">Download Form Inquiry Template</span><span class="spacer"></span><button class="btn sm">⤓ Download Template</button></div>
+      <div class="step"><span class="num">1</span><span class="t">Download Form Inquiry Template</span><span class="spacer"></span><button class="btn sm"><svg class="bi" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Template</button></div>
       <div class="step"><span class="num">2</span><span class="t">Select Branch</span></div>
-      <div class="mselect">HQ Training <span>˅</span></div>
+      <div class="mselect">HQ Training <span style="color:var(--muted2);display:inline-flex"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>
       <div class="step"><span class="num">3</span><span class="t">Upload Inquiry Data</span></div>
 
       <div class="drop file">
@@ -378,11 +455,17 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
     <div class="mhead"><h2 id="niTitle">New Inquiry</h2><button class="x" id="niX">×</button></div>
     <div class="mbody">
       <div class="formgrid">
-        <div class="fg"><label>Branch <span class="req">*</span></label><select id="f_branch"><option>HQ Training</option><option>Cibubur</option><option>Kelapa Gading</option><option>Transyogi</option></select></div>
-        <div class="fg"><label>Source</label><select id="f_source"></select></div>
+        <div class="fg"><label>Branch <span class="req">*</span></label>
+          <div class="pick" id="f_branch_pick"><button type="button" class="pickbtn" id="f_branch_btn"><span class="picklabel" id="f_branch_label"></span><span class="pickcaret"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></button><div class="pickpanel" id="f_branch_panel"></div></div>
+          <input type="hidden" id="f_branch"></div>
+        <div class="fg"><label>Source</label>
+          <div class="pick" id="f_source_pick"><button type="button" class="pickbtn" id="f_source_btn"><span class="picklabel" id="f_source_label"></span><span class="pickcaret"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></button><div class="pickpanel" id="f_source_panel"></div></div>
+          <input type="hidden" id="f_source"></div>
         <div class="fg"><label>Student Name <span class="opt">(opsional)</span></label><input id="f_student" placeholder="Nama calon siswa"></div>
         <div class="fg"><label>Parent Name <span class="opt">(opsional)</span></label><input id="f_parent" placeholder="Nama orang tua"></div>
-        <div class="fg"><label>Country <span class="req">*</span></label><select id="f_country"></select></div>
+        <div class="fg"><label>Country <span class="req">*</span></label>
+          <div class="pick" id="f_country_pick"><button type="button" class="pickbtn" id="f_country_btn"><span class="picklabel" id="f_country_label"></span><span class="pickcaret"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></button><div class="pickpanel" id="f_country_panel"></div></div>
+          <input type="hidden" id="f_country"></div>
         <div class="fg"><label>Phone Number <span class="req">*</span></label>
           <div class="phonewrap" id="phonewrap"><span class="code" id="f_code">+62</span><input id="f_phone" inputmode="numeric" placeholder="81234567890"></div>
           <div class="dupwarn" id="dupWarn"></div>
@@ -390,13 +473,41 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
         </div>
         <div class="fg"><label>Inquiry Date</label><input type="date" id="f_date"></div>
         <div class="fg"><label>Social Media Username <span class="opt">(opsional)</span></label><input id="f_sosmed" placeholder="@username"></div>
-        <div class="fg full"><label>Status <span class="req">*</span></label><select id="f_status"></select><div class="statusdesc" id="statusDesc"></div></div>
+        <div class="fg full"><label>Status <span class="req">*</span></label>
+          <div class="statuspick" id="statusPick">
+            <button type="button" class="spbtn" id="spBtn"><span class="spdot" id="spDot"></span><span class="splabel" id="spLabel">Pilih status…</span><span class="spcaret"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            <div class="sppanel" id="spPanel"></div>
+          </div>
+          <input type="hidden" id="f_status">
+          <div class="statusdesc" id="statusDesc"></div>
+        </div>
         <div class="fg full"><label>Contact Note <span class="opt">(opsional)</span></label><textarea id="f_note" rows="2" placeholder="Catatan / hasil follow up"></textarea></div>
       </div>
     </div>
     <div class="mfoot">
       <div class="fsummary" id="niHint">Kolom bertanda <b>*</b> wajib. Nomor telepon dicek agar tidak duplikat.</div>
       <div class="fr"><button class="btn ghost" id="niClose">Close</button><button class="btn solid" id="niSave">Save Inquiry</button></div>
+    </div>
+  </div>
+</div>
+<!-- DETAIL MODAL -->
+<div class="overlay" id="overlay3">
+  <div class="modal detail">
+    <div class="dhero">
+      <button class="x dx" id="dX">×</button>
+      <div class="dava" id="dAva">?</div>
+      <div class="dhname" id="dName"></div>
+      <div class="dhsub" id="dSub"></div>
+    </div>
+    <div class="mbody">
+      <div class="dsec-title">Information</div>
+      <div class="dgrid" id="dGrid"></div>
+      <div class="dblock"><div class="dlabel">Status</div><div class="dstatus-wrap" id="dStatusDesc"></div></div>
+      <div class="dblock"><div class="dlabel">Contact Note</div><div class="dnote" id="dNote"></div></div>
+    </div>
+    <div class="mfoot">
+      <div class="fsummary">Data lengkap inquiry ini.</div>
+      <div class="fr"><button class="btn ghost" id="dClose">Close</button><button class="btn solid" id="dEdit"><svg class="bi" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Inquiry</button></div>
     </div>
   </div>
 </div>
