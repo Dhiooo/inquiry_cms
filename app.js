@@ -306,6 +306,7 @@ document.getElementById('validateBtn').onclick=()=>{
   ssFilter='all'; ssPage=1;
   document.querySelectorAll('#vresult .ss-ifilter').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all'));
   document.getElementById('ssSearch').value=''; document.getElementById('ssSeverity').value='all'; document.getElementById('ssSort').value='fatal-first';
+  syncPicker('ssSeverity'); syncPicker('ssSort');
   renderValidationTable();
   document.getElementById('fsummary').innerHTML='<span style="font-size:14px;font-weight:600;color:#3a444c">98 inquiries will be added</span><br><span style="color:var(--muted)">91 ready + 7 incomplete · 2 fatal excluded</span>';
   const ab=document.getElementById('addBtn'); ab.disabled=false; ab.textContent='Add Inquiry (98)';
@@ -314,8 +315,6 @@ document.getElementById('validateBtn').onclick=()=>{
 document.getElementById('addBtn').onclick=openConfirm;
 document.querySelectorAll('#vresult .ss-ifilter').forEach(f=>f.onclick=()=>{document.querySelectorAll('#vresult .ss-ifilter').forEach(x=>x.classList.remove('active'));f.classList.add('active');ssFilter=f.dataset.filter;ssPage=1;renderValidationTable();});
 document.getElementById('ssSearch').addEventListener('input',()=>{ssPage=1;renderValidationTable();});
-document.getElementById('ssSeverity').addEventListener('change',()=>{ssPage=1;renderValidationTable();});
-document.getElementById('ssSort').addEventListener('change',()=>{ssPage=1;renderValidationTable();});
 
 /* ===== Add Inquiry confirmation dialog ===== */
 function openConfirm(){ document.getElementById('overlay4').classList.add('show'); }
@@ -395,6 +394,8 @@ document.addEventListener('click', e=>{ if(!e.target.closest('.pick')) document.
 
 /* ---- populate selects (custom pickers) ---- */
 function initForm(){
+  makePicker('ssSeverity',[{value:'all',label:'All'},{value:'fatal',label:'Fatal'},{value:'warning',label:'Warning'}],{onChange:()=>{ssPage=1;renderValidationTable();}});
+  makePicker('ssSort',[{value:'fatal-first',label:'Fatal first'},{value:'warning-first',label:'Warning first'},{value:'row-asc',label:'Row ascending'},{value:'row-desc',label:'Row descending'}],{onChange:()=>{ssPage=1;renderValidationTable();}});
   makePicker('f_branch',[{value:'HQ Training',label:'HQ Training'},{value:'Cibubur',label:'Cibubur'},{value:'Kelapa Gading',label:'Kelapa Gading'},{value:'Transyogi',label:'Transyogi'}],{placeholder:'Pilih branch'});
   makePicker('f_source',SOURCES.map(s=>({value:s,label:s})),{placeholder:'Pilih sumber'});
   makePicker('f_country',COUNTRY_CODES.map(x=>({value:x.d,label:`${x.c} (${x.d})`})),{placeholder:'Pilih negara',onChange:(v)=>{ el('f_code').textContent=v||'+62'; checkDup(); }});

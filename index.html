@@ -356,6 +356,14 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
 .ss-tool label{white-space:nowrap}
 .ss-tool select{appearance:none;border:0;outline:0;background:transparent;color:#586773;font:inherit;font-weight:600;padding:0 22px 0 0;cursor:pointer}
 .ss-tool .ss-chevron{position:absolute;right:9px;width:14px;height:14px;pointer-events:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ss-filterpick{min-width:154px}
+.ss-filterpick.sort{min-width:174px}
+.ss-filterpick .pickbtn{height:40px;font-size:12px;padding:0 11px;border-color:#dce3df}
+.ss-filterpick .picklabel{flex:0 1 auto;color:#586773;font-weight:500}
+.ss-filterpick .ss-prefix{color:#586773;font-weight:600;white-space:nowrap}
+.ss-filterpick .pickcaret{margin-left:auto}
+.ss-filterpick .pickpanel{min-width:100%;width:max-content;padding:6px;border-radius:10px}
+.ss-filterpick .ddi{font-size:12px;min-width:142px;padding:9px 10px}
 .ss-tablebox{border:1px solid #dce3df;border-radius:12px;overflow:hidden;background:#fff}
 .ss-thead,.ss-datarow{display:grid;grid-template-columns:56px 158px 1fr 118px}
 .ss-thead{height:44px;background:#f4f7f5;border-bottom:1px solid #dce3df;align-items:center;font-size:10.5px;font-weight:600;color:#6f7e89;text-transform:uppercase;letter-spacing:.35px}
@@ -543,8 +551,8 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
           </div>
           <div class="ss-tools">
             <label class="ss-search" for="ssSearch"><svg class="ci" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/></svg><input id="ssSearch" type="search" placeholder="Search name, phone, or row..." autocomplete="off"></label>
-            <div class="ss-tool"><label for="ssSeverity">Severity:</label><select id="ssSeverity"><option value="all">All</option><option value="fatal">Fatal</option><option value="warning">Warning</option></select><svg class="ss-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
-            <div class="ss-tool"><label for="ssSort">Sort:</label><select id="ssSort"><option value="fatal-first">Fatal first</option><option value="warning-first">Warning first</option><option value="row-asc">Row ascending</option><option value="row-desc">Row descending</option></select><svg class="ss-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+            <div class="pick ss-filterpick" id="ssSeverity_pick"><button type="button" class="pickbtn" id="ssSeverity_btn"><span class="ss-prefix">Severity:</span><span class="picklabel" id="ssSeverity_label"></span><span class="pickcaret"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></button><div class="pickpanel" id="ssSeverity_panel"></div><input type="hidden" id="ssSeverity" value="all"></div>
+            <div class="pick ss-filterpick sort" id="ssSort_pick"><button type="button" class="pickbtn" id="ssSort_btn"><span class="ss-prefix">Sort:</span><span class="picklabel" id="ssSort_label"></span><span class="pickcaret"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></button><div class="pickpanel" id="ssSort_panel"></div><input type="hidden" id="ssSort" value="fatal-first"></div>
           </div>
           <div class="ss-tablebox">
             <div class="ss-thead"><div class="ss-cell">Row</div><div class="ss-cell">Inquiry</div><div class="ss-cell">Issues</div><div class="ss-cell">Result</div></div>
