@@ -221,6 +221,63 @@ function addInquiries(){
 }
 function fmtDate(iso){const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const d=new Date(iso+'T00:00:00');return `${String(d.getDate()).padStart(2,'0')} ${m[d.getMonth()]} ${d.getFullYear()}`;}
 
+/* ===== Spreadsheet issue filtering, severity and sorting ===== */
+const VALIDATION_ISSUES = [
+  {row:8,name:'Budi',meta:'Source · Facebook',severity:'fatal',cats:['phone'],issues:[['Phone Number - belum diisi','fatal']]},
+  {row:9,name:'Ika',meta:'+62 812 4000 7788',severity:'fatal',cats:['phone'],issues:[['Phone Number - sama dengan data di baris 10','fatal']]},
+  {row:6,name:'Rian',meta:'+62 512 1346 1452',severity:'warning',cats:['date','source','chat'],issues:[['Inquiry Date - tidak sesuai format','warning'],['Source Ads - tidak sesuai pilihan','warning'],['Chat - “C9” tidak ditemukan','warning']]},
+  {row:4,name:'Andaleeb',meta:'+62 555 5190 5595',severity:'warning',cats:['date'],issues:[['Inquiry Date - belum diisi','warning']]},
+  {row:7,name:'Tanpa nama',italic:true,meta:'+62 556 5551 115',severity:'warning',cats:['date','source'],issues:[['Inquiry Date - belum diisi','warning'],['Source Ads - pilihan tidak tersedia','warning'],['Name - belum diisi (opsional)','more']]},
+  {row:10,name:'Sena',meta:'+62 852 1968 0024',severity:'warning',cats:['date'],issues:[['Inquiry Date - belum diisi','warning']]},
+  {row:11,name:'Tanpa nama',italic:true,meta:'+62 812 3486 1881',severity:'warning',cats:[],issues:[['Age Group - belum diisi','warning']]},
+  {row:12,name:'Linda',meta:'+62 816 513 514',severity:'warning',cats:[],issues:[['Domisili - belum diisi','warning']]},
+  {row:16,name:'Ayu Narita',meta:'+62 813 3366 1588',severity:'warning',cats:[],issues:[['Contact Note - belum diisi','warning']]}
+];
+let ssFilter='all', ssPage=1;
+const SS_PAGE_SIZE=5;
+function validationMatches(row){
+  const severity=document.getElementById('ssSeverity').value;
+  const query=document.getElementById('ssSearch').value.trim().toLowerCase();
+  if(ssFilter!=='all'&&!row.cats.includes(ssFilter)) return false;
+  if(severity!=='all'&&row.severity!==severity) return false;
+  if(query&&!`${row.row} ${row.name} ${row.meta} ${row.issues.map(x=>x[0]).join(' ')}`.toLowerCase().includes(query)) return false;
+  return true;
+}
+function renderValidationTable(){
+  const sort=document.getElementById('ssSort').value;
+  let rows=VALIDATION_ISSUES.filter(validationMatches);
+  rows.sort((a,b)=>{
+    if(sort==='row-asc') return a.row-b.row;
+    if(sort==='row-desc') return b.row-a.row;
+    const first=sort==='warning-first'?'warning':'fatal';
+    if(a.severity!==b.severity) return a.severity===first?-1:1;
+    return a.row-b.row;
+  });
+  const pages=Math.max(1,Math.ceil(rows.length/SS_PAGE_SIZE));
+  ssPage=Math.min(ssPage,pages);
+  const from=(ssPage-1)*SS_PAGE_SIZE;
+  const shown=rows.slice(from,from+SS_PAGE_SIZE);
+  let lastSeverity=null, html='';
+  shown.forEach(row=>{
+    if(row.severity!==lastSeverity){
+      const count=rows.filter(x=>x.severity===row.severity).length;
+      html+=row.severity==='fatal'
+        ?`<div class="ss-group fatal"><span>Fatal · ${count} ${count===1?'inquiry':'inquiries'}</span><span>Will not be added</span></div>`
+        :`<div class="ss-group warning"><span>Incomplete · ${count} ${count===1?'inquiry':'inquiries'}</span><span>Will still be added</span></div>`;
+      lastSeverity=row.severity;
+    }
+    const chips=row.issues.map(([text,type])=>`<span class="ss-chip ${type==='fatal'?'cf':type==='warning'?'cw':'cmore'}">${esc(text)}</span>`).join('');
+    const issueCount=row.issues.filter(x=>x[1]!=='more').length;
+    html+=`<div class="ss-datarow ${row.severity==='fatal'?'fatalrow':''}"><div class="ss-cell"><div class="ss-rownum">${row.row}</div></div><div class="ss-cell"><div class="ss-person">${row.italic?`<i>${esc(row.name)}</i>`:esc(row.name)}</div><div class="ss-meta">${esc(row.meta)}</div></div><div class="ss-cell"><div class="ss-chips">${chips}</div></div><div class="ss-cell"><span class="ss-badge ${row.severity==='fatal'?'bf':'bw'}">${issueCount} ${row.severity==='fatal'?'FATAL':'WARNING'}</span><span class="ss-result">${row.severity==='fatal'?'Terblokir':'Tetap di-import'}</span></div></div>`;
+  });
+  if(!shown.length) html='<div class="ss-empty">Tidak ada inquiry yang cocok dengan filter.</div>';
+  document.getElementById('ssRows').innerHTML=html;
+  const start=rows.length?from+1:0, finish=Math.min(from+SS_PAGE_SIZE,rows.length);
+  document.getElementById('ssPagerText').textContent=`Showing ${start}–${finish} of ${rows.length} inquiries · Rows per page: ${SS_PAGE_SIZE}`;
+  document.getElementById('ssPages').innerHTML=`<button type="button" class="ss-page" data-page="prev" ${ssPage===1?'disabled':''} aria-label="Previous page"><svg class="ci" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>${Array.from({length:pages},(_,i)=>`<button type="button" class="ss-page ${ssPage===i+1?'active':''}" data-page="${i+1}">${i+1}</button>`).join('')}<button type="button" class="ss-page" data-page="next" ${ssPage===pages?'disabled':''} aria-label="Next page"><svg class="ci" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>`;
+  document.querySelectorAll('#ssPages [data-page]').forEach(btn=>btn.onclick=()=>{const p=btn.dataset.page;ssPage=p==='prev'?Math.max(1,ssPage-1):p==='next'?Math.min(pages,ssPage+1):Number(p);renderValidationTable();});
+}
+
 /* ===== Modal wiring ===== */
 const overlay=document.getElementById('overlay');
 let dashboardScrollY=0;
@@ -246,12 +303,19 @@ document.getElementById('closeBtn').onclick=closeModal;
 overlay.onclick=e=>{if(e.target===overlay)closeModal();};
 document.getElementById('validateBtn').onclick=()=>{
   const vr=document.getElementById('vresult'); vr.style.display='block';
+  ssFilter='all'; ssPage=1;
+  document.querySelectorAll('#vresult .ss-ifilter').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all'));
+  document.getElementById('ssSearch').value=''; document.getElementById('ssSeverity').value='all'; document.getElementById('ssSort').value='fatal-first';
+  renderValidationTable();
   document.getElementById('fsummary').innerHTML='<span style="font-size:14px;font-weight:600;color:#3a444c">98 inquiries will be added</span><br><span style="color:var(--muted)">91 ready + 7 incomplete · 2 fatal excluded</span>';
   const ab=document.getElementById('addBtn'); ab.disabled=false; ab.textContent='Add Inquiry (98)';
   try{ vr.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
 };
 document.getElementById('addBtn').onclick=openConfirm;
-document.querySelectorAll('#vresult .ss-ifilter').forEach(f=>f.onclick=()=>{document.querySelectorAll('#vresult .ss-ifilter').forEach(x=>x.classList.remove('active'));f.classList.add('active');});
+document.querySelectorAll('#vresult .ss-ifilter').forEach(f=>f.onclick=()=>{document.querySelectorAll('#vresult .ss-ifilter').forEach(x=>x.classList.remove('active'));f.classList.add('active');ssFilter=f.dataset.filter;ssPage=1;renderValidationTable();});
+document.getElementById('ssSearch').addEventListener('input',()=>{ssPage=1;renderValidationTable();});
+document.getElementById('ssSeverity').addEventListener('change',()=>{ssPage=1;renderValidationTable();});
+document.getElementById('ssSort').addEventListener('change',()=>{ssPage=1;renderValidationTable();});
 
 /* ===== Add Inquiry confirmation dialog ===== */
 function openConfirm(){ document.getElementById('overlay4').classList.add('show'); }
@@ -284,6 +348,7 @@ const COUNTRY_CODES = [
 ];
 const el = id => document.getElementById(id);
 let editIndex = null; // null = create, number = editing dashRows[idx]
+let phoneFormatError = false;
 
 /* ---- toast ---- */
 let toastT;
@@ -334,7 +399,13 @@ function initForm(){
   makePicker('f_source',SOURCES.map(s=>({value:s,label:s})),{placeholder:'Pilih sumber'});
   makePicker('f_country',COUNTRY_CODES.map(x=>({value:x.d,label:`${x.c} (${x.d})`})),{placeholder:'Pilih negara',onChange:(v)=>{ el('f_code').textContent=v||'+62'; checkDup(); }});
   buildStatusPicker();
-  el('f_phone').addEventListener('input', checkDup);
+  el('f_phone').addEventListener('input', e=>{
+    const raw=e.target.value;
+    const digits=raw.replace(/[^0-9]/g,'');
+    phoneFormatError=raw!==digits;
+    if(phoneFormatError) e.target.value=digits;
+    checkDup();
+  });
   const fd=el('f_date'); const updDate=()=>fd.classList.toggle('empty',!fd.value); fd.addEventListener('input',updDate); fd.addEventListener('change',updDate); updDate();
   renderStatusDesc();
 }
@@ -364,6 +435,12 @@ function checkDup(){
   const localDigits=(phone||'').replace(/[^0-9]/g,'');
   const wrap=el('phonewrap'), warn=el('dupWarn'), ok=el('dupOk');
   wrap.classList.remove('err','ok'); warn.classList.remove('show'); ok.classList.remove('show');
+  if(phoneFormatError){
+    wrap.classList.add('err'); warn.classList.add('show');
+    warn.innerHTML='⚠ Hanya angka 0–9 yang diperbolehkan. Huruf atau karakter lain sudah dihapus; periksa kembali nomor telepon.';
+    el('niSave').disabled=true;
+    return;
+  }
   if(!localDigits){ el('niSave').disabled=false; return; }
   const dup=findDuplicate(code, phone, editIndex);
   if(dup){
@@ -380,7 +457,7 @@ function checkDup(){
 function openNewInquiry(){
   editIndex=null; el('niTitle').textContent='New Inquiry';
   el('f_branch').value='HQ Training'; el('f_source').value=''; el('f_student').value=''; el('f_parent').value='';
-  el('f_country').value='+62'; el('f_code').textContent='+62'; el('f_phone').value='';
+  el('f_country').value='+62'; el('f_code').textContent='+62'; el('f_phone').value=''; phoneFormatError=false;
   el('f_date').value=''; el('f_sosmed').value=''; el('f_status').value='C1'; el('f_note').value='';
   ['f_branch','f_source','f_country'].forEach(syncPicker);
   el('f_date').classList.toggle('empty',!el('f_date').value);
@@ -393,7 +470,7 @@ function openEditInquiry(idx){
   el('f_source').value = SOURCES.find(s=>s.toUpperCase()===(r.source||'').toUpperCase())||'';
   el('f_student').value=r.student||''; el('f_parent').value=r.parent||'';
   const cc=COUNTRY_CODES.find(x=>x.d===r.code); el('f_country').value=cc?cc.d:'+62'; el('f_code').textContent=cc?cc.d:(r.code||'+62');
-  el('f_phone').value=r.phone||''; el('f_date').value=''; el('f_sosmed').value=r.sosmed||'';
+  el('f_phone').value=r.phone||''; phoneFormatError=false; el('f_date').value=''; el('f_sosmed').value=r.sosmed||'';
   el('f_status').value=r.chat||'A'; el('f_note').value=r.note||'';
   ['f_branch','f_source','f_country'].forEach(syncPicker);
   el('f_date').classList.toggle('empty',!el('f_date').value);
@@ -404,6 +481,7 @@ function closeNewInquiry(){ el('overlay2').classList.remove('show'); }
 function saveInquiry(){
   const code=el('f_code').textContent, phone=el('f_phone').value.trim();
   if(!phone){ toast('Nomor telepon wajib diisi.'); el('phonewrap').classList.add('err'); return; }
+  if(phoneFormatError||!/^[0-9]+$/.test(phone)){ toast('Nomor telepon hanya boleh berisi angka 0–9.'); checkDup(); return; }
   if(findDuplicate(code,phone,editIndex)){ toast('Tidak bisa disimpan — nomor telepon duplikat.'); return; }
   const cc=COUNTRY_CODES.find(x=>x.d===code);
   const rec={
