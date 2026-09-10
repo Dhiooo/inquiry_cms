@@ -171,15 +171,20 @@ function paint(){
     const force = v.sev==='er'?`<div class="forcebar"><span class="warnico">⛔ Fatal</span><label class="switch"><input type="checkbox" ${v.force?'checked':''} onchange="toggleForce(${idx})"><span class="track"></span> Force Add — tambah tetap, perbaiki di CMS</label></div>`:'';
     return `<div class="rowc ${rowCls}">
       <div class="rhead">
-        <span class="rn">Baris ${v.raw.r}</span>
-        <span class="who">${esc(v.who)}</span>
-        <span class="rphone">${v.p.ok?esc(v.p.code+' '+v.p.pretty):'no phone'}</span>
+        <span class="ricon">${v.sev==='er'?'✕':(v.sev==='wr'?'!':'✓')}</span>
+        <div class="rid">
+          <div class="rname${v.raw.name?'':' muted'}">${v.raw.name?esc(v.raw.name):'Tanpa nama'}</div>
+          <div class="rsub"><span class="rn">Baris ${v.raw.r}</span><span class="rphone">${v.p.ok?esc(v.p.code+' '+v.p.pretty):'Nomor kosong'}</span></div>
+        </div>
         <span class="rstate ${stateCls}">${stateLbl}</span>
       </div>
-      ${chipsHtml}${probsHtml}
+      ${chipsHtml?`<div class="rmeta">Terdeteksi otomatis</div>${chipsHtml}`:''}
+      ${probsHtml?`<div class="rmeta">Perlu diperhatikan</div>${probsHtml}`:''}
       ${force}
     </div>`;
   }).join('');
+
+  document.querySelectorAll('.filterchips .chip').forEach(ch=>{ const f=ch.dataset.f; const n=f==='all'?VROWS.length:(f==='wr'?c.wr:c.er); const base=f==='all'?'Semua':(f==='wr'?'Perlu dilengkapi':'Fatal'); ch.textContent=base+' ('+n+')'; });
 
   // footer summary + Add button
   const willAdd = VROWS.filter(v=> v.sev==='ok' || (v.sev==='wr'&&skip) || (v.sev==='er'&&v.force)).length;
@@ -225,10 +230,34 @@ document.getElementById('importBtn').onclick=openModal;
 document.getElementById('closeX').onclick=closeModal;
 document.getElementById('closeBtn').onclick=closeModal;
 overlay.onclick=e=>{if(e.target===overlay)closeModal();};
-document.getElementById('validateBtn').onclick=()=>{document.getElementById('vresult').style.display='block';validate();};
-document.getElementById('skipToggle').onchange=paint;
-document.getElementById('addBtn').onclick=addInquiries;
-document.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));ch.classList.add('on');paint();});
+document.getElementById('validateBtn').onclick=()=>{
+  const vr=document.getElementById('vresult'); vr.style.display='block';
+  document.getElementById('fsummary').innerHTML='<span style="font-size:14px;font-weight:800;color:#3a444c">98 inquiries will be added</span><br><span style="color:var(--muted)">91 ready + 7 incomplete · 2 fatal excluded</span>';
+  const ab=document.getElementById('addBtn'); ab.disabled=false; ab.textContent='Add Inquiry (98)';
+  try{ vr.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+};
+document.getElementById('addBtn').onclick=openConfirm;
+document.querySelectorAll('#vresult .ss-ifilter').forEach(f=>f.onclick=()=>{document.querySelectorAll('#vresult .ss-ifilter').forEach(x=>x.classList.remove('active'));f.classList.add('active');});
+
+/* ===== Add Inquiry confirmation dialog ===== */
+function openConfirm(){ document.getElementById('overlay4').classList.add('show'); }
+function closeConfirm(){ document.getElementById('overlay4').classList.remove('show'); }
+document.getElementById('cfX').onclick=closeConfirm;
+document.getElementById('cfCancel').onclick=closeConfirm;
+document.getElementById('overlay4').onclick=e=>{ if(e.target===document.getElementById('overlay4')) closeConfirm(); };
+document.getElementById('cfConfirm').onclick=()=>{ closeConfirm(); confirmAddInquiries(); };
+function confirmAddInquiries(){
+  dashRows.forEach(r=>{r._new=false;});
+  const sample=[
+    {branch:'HQ Training',student:'Rian',parent:'',source:'FACEBOOK',country:'Indonesia',code:'+62',phone:'51213461452',date:'—',chat:'C1',_new:true,_incomplete:true},
+    {branch:'HQ Training',student:'Andaleeb',parent:'',source:'UNKNOWN',country:'Indonesia',code:'+62',phone:'55551905595',date:'—',chat:'C3',_new:true,_incomplete:true},
+    {branch:'HQ Training',student:'',parent:'',source:'INSTAGRAM',country:'Indonesia',code:'+62',phone:'55655551115',date:'—',chat:'C3',_new:true,_incomplete:true}
+  ];
+  dashRows = sample.concat(dashRows);
+  renderDash();
+  closeModal();
+  toast('98 inquiry ditambahkan · 2 fatal dilewati.');
+}
 
 
 /* =====================================================================
@@ -292,6 +321,7 @@ function initForm(){
   makePicker('f_country',COUNTRY_CODES.map(x=>({value:x.d,label:`${x.c} (${x.d})`})),{placeholder:'Pilih negara',onChange:(v)=>{ el('f_code').textContent=v||'+62'; checkDup(); }});
   buildStatusPicker();
   el('f_phone').addEventListener('input', checkDup);
+  const fd=el('f_date'); const updDate=()=>fd.classList.toggle('empty',!fd.value); fd.addEventListener('input',updDate); fd.addEventListener('change',updDate); updDate();
   renderStatusDesc();
 }
 function buildStatusPicker(){
@@ -339,6 +369,7 @@ function openNewInquiry(){
   el('f_country').value='+62'; el('f_code').textContent='+62'; el('f_phone').value='';
   el('f_date').value=''; el('f_sosmed').value=''; el('f_status').value='C1'; el('f_note').value='';
   ['f_branch','f_source','f_country'].forEach(syncPicker);
+  el('f_date').classList.toggle('empty',!el('f_date').value);
   renderStatusDesc(); checkDup(); el('overlay2').classList.add('show');
 }
 function openEditInquiry(idx){
@@ -351,6 +382,7 @@ function openEditInquiry(idx){
   el('f_phone').value=r.phone||''; el('f_date').value=''; el('f_sosmed').value=r.sosmed||'';
   el('f_status').value=r.chat||'A'; el('f_note').value=r.note||'';
   ['f_branch','f_source','f_country'].forEach(syncPicker);
+  el('f_date').classList.toggle('empty',!el('f_date').value);
   renderStatusDesc(); checkDup(); el('overlay2').classList.add('show');
 }
 function closeNewInquiry(){ el('overlay2').classList.remove('show'); }
@@ -380,9 +412,9 @@ function openActionMenu(ev, idx){
   let lastCat=null, statusItems='';
   STATUS_LIST.forEach(s=>{
     if(s.cat!==lastCat){statusItems+=`<div class="sep">${s.cat}</div>`;lastCat=s.cat;}
-    statusItems+=`<div class="st" onclick="setStatus(${idx},'${s.code}')">
-      <span class="dot" style="background:${CLS_COLOR[s.cls]}"></span>
-      <div><div class="lbl">${s.code} <span style="color:#aab3bd;font-weight:600">${s.lbl}</span></div><div class="d">${esc(s.desc)}</div></div>
+    statusItems+=`<div class="st${r.chat===s.code?' sel':''}" onclick="setStatus(${idx},'${s.code}')">
+      <span class="stcode" style="background:${CLS_COLOR[s.cls]}">${s.code}</span>
+      <div class="sttext"><div class="stlbl">${esc(s.lbl)}</div><div class="std">${esc(s.desc)}</div></div>
       ${r.chat===s.code?'<span class="chk">✓</span>':''}
     </div>`;
   });

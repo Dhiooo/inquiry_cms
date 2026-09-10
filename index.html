@@ -122,15 +122,18 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 
 /* validation summary */
 .vsum{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
-.vcard{border-radius:12px;padding:14px;border:1px solid var(--line);text-align:center}
-.vcard .n{font-size:24px;font-weight:700;line-height:1}
-.vcard .l{font-size:11.5px;font-weight:600;margin-top:6px;letter-spacing:.02em}
+.vcard{border-radius:12px;padding:13px 14px;border:1px solid var(--line);display:flex;align-items:center;gap:11px;text-align:left}
+.vcard .vic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
+.vcard .n{font-size:22px;font-weight:800;line-height:1}
+.vcard .l{font-size:11.5px;font-weight:600;margin-top:3px;color:#5c666e}
 .vcard.ok{background:var(--green-soft);border-color:#c9ecd5}
-.vcard.ok .n{color:#1c8f42}.vcard.ok .l{color:#1c8f42}
+.vcard.ok .vic{background:#c9ecd5;color:#1c8f42}.vcard.ok .n{color:#1c8f42}
 .vcard.wr{background:var(--orange-soft);border-color:#f4dcbb}
-.vcard.wr .n{color:#b26a1f}.vcard.wr .l{color:#b26a1f}
+.vcard.wr .vic{background:#f4dcbb;color:#b26a1f}.vcard.wr .n{color:#b26a1f}
 .vcard.er{background:var(--red-soft);border-color:#f6cec7}
-.vcard.er .n{color:#c0392b}.vcard.er .l{color:#c0392b}
+.vcard.er .vic{background:#f6cec7;color:#c0392b}.vcard.er .n{color:#c0392b}
+.vguide{font-size:12.5px;color:#5c666e;background:#fff;border:1px dashed var(--line2);border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.55}
+.vguide b{color:#3a444c}
 
 .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#f7f9fa;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
 .switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;color:#3a444c;font-weight:500}
@@ -148,14 +151,22 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 .rowc.ok{border-left-color:var(--green)}
 .rowc.wr{border-left-color:var(--orange)}
 .rowc.er{border-left-color:var(--red)}
-.rowc .rhead{display:flex;align-items:center;gap:10px}
-.rowc .rn{font-size:11px;font-weight:700;color:#fff;border-radius:6px;padding:2px 8px;background:var(--muted2)}
+.rowc .rhead{display:flex;align-items:center;gap:11px}
+.rowc .ricon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.rowc.ok .ricon{background:var(--green-soft);color:#1c8f42}
+.rowc.wr .ricon{background:var(--orange-soft);color:#b26a1f}
+.rowc.er .ricon{background:var(--red-soft);color:#c0392b}
+.rowc .rid{min-width:0;display:flex;flex-direction:column;gap:2px}
+.rowc .rname{font-weight:700;color:#2b3843;font-size:13.5px;line-height:1.2}
+.rowc .rname.muted{color:var(--muted2);font-weight:600;font-style:italic}
+.rowc .rsub{display:flex;align-items:center;gap:8px}
+.rowc .rn{font-size:10.5px;font-weight:700;color:#fff;border-radius:5px;padding:1px 7px;background:var(--muted2)}
 .rowc.ok .rn{background:var(--green)}
 .rowc.wr .rn{background:var(--orange)}
 .rowc.er .rn{background:var(--red)}
-.rowc .who{font-weight:600;color:#2b3843}
 .rowc .rphone{color:var(--muted);font-size:12.5px}
-.rowc .rstate{margin-left:auto;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:16px}
+.rowc .rstate{margin-left:auto;align-self:flex-start;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:16px;white-space:nowrap}
+.rowc .rmeta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted2);margin-top:11px}
 .rstate.ok{background:var(--green-soft);color:#1c8f42}
 .rstate.wr{background:var(--orange-soft);color:#b26a1f}
 .rstate.er{background:var(--red-soft);color:#c0392b}
@@ -193,6 +204,8 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 .fg input,.fg select,.fg textarea{height:44px;border:1px solid var(--line2);border-radius:10px;padding:0 12px;font-family:inherit;font-size:13.5px;color:#333;outline:none;background:#fff}
 .fg textarea{height:auto;padding:10px 12px;resize:vertical}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--green)}
+.fg input::placeholder,.fg textarea::placeholder{color:#aab3bd;opacity:1}
+.fg input[type=date].empty{color:#aab3bd}
 .phonewrap{display:flex;align-items:stretch;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
 .phonewrap.err{border-color:var(--red);background:var(--red-soft)}
 .phonewrap.ok{border-color:var(--green)}
@@ -212,12 +225,14 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 .amenu .mi.red{color:var(--red)}
 .amenu .mi .k{width:18px;text-align:center}
 .amenu .sep{font-size:10.5px;letter-spacing:.1em;color:var(--muted2);font-weight:700;padding:9px 10px 4px}
-.amenu .st{display:flex;align-items:center;gap:9px;padding:6px 10px;border-radius:8px;cursor:pointer}
+.amenu .st{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
 .amenu .st:hover{background:#f6f8f9}
-.amenu .st .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.amenu .st .lbl{font-size:13px;font-weight:600;color:#3a444c;line-height:1.2}
-.amenu .st .d{font-size:11px;color:var(--muted);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:188px}
-.amenu .st .chk{margin-left:auto;color:var(--green);font-weight:700}
+.amenu .st.sel{background:var(--green-soft)}
+.amenu .st .stcode{flex-shrink:0;min-width:26px;height:20px;padding:0 6px;border-radius:6px;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-top:1px}
+.amenu .st .sttext{min-width:0}
+.amenu .st .stlbl{font-size:13px;font-weight:700;color:#2b3843;line-height:1.2}
+.amenu .st .std{font-size:11px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:176px}
+.amenu .st .chk{margin-left:auto;color:var(--green);font-weight:700;align-self:center}
 .amenu .divider{height:1px;background:var(--line);margin:5px 2px}
 /* toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#26313a;color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;z-index:90;box-shadow:0 10px 30px rgba(0,0,0,.25)}
@@ -230,9 +245,9 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 .pill.other{background:#eceef0;color:#7d858c}
 .pill .scode{opacity:.6;font-weight:700;margin-left:5px;font-size:10px}
 /* import — compact row chips & problems */
-.rchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.rchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .ac{font-size:11px;color:#5c666e;background:#f1f4f6;border:1px solid var(--line2);border-radius:14px;padding:2px 9px;font-weight:500;white-space:nowrap}
-.rprobs{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.rprobs{display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .pr{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.4}
 .pr .pi{flex-shrink:0;width:17px;height:17px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#fff;margin-top:1px}
 .pr.w .pi{background:var(--orange)}
@@ -307,6 +322,92 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 .dstatus-wrap{margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dstatustxt{font-size:13px;color:var(--muted)}
 @media(max-width:900px){.sidebar{display:none}.vsum{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}}
+
+/* ===== Import — Smart Spreadsheet validation results ===== */
+.modal.wide{max-width:850px}
+.ss-scrollcue{display:flex;align-items:center;gap:10px;margin:6px 0 18px;color:#557064;font-size:12px;font-weight:700}
+.ss-line{height:1px;background:#dce8e0;flex:1}
+.ss-results{padding-top:4px}
+.ss-rhead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.ss-rhead h2{font-size:20px;margin:0 0 5px;color:var(--ink);font-weight:800}
+.ss-sub{font-size:12px;color:#71808e}
+.ss-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.ss-sum{height:64px;border:1px solid #dce3df;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px}
+.ss-sico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-weight:900}
+.ss-sico.sg{background:#eaf8ef;color:#0e7e36}
+.ss-sico.so{background:#fff5e6;color:#d7790b}
+.ss-sico.sr{background:#fff0ee;color:#d8443d}
+.ss-snum{font-size:20px;font-weight:800;line-height:1;color:var(--ink)}
+.ss-slabel{font-size:11px;color:#71808e;margin-top:4px}
+.ss-issuefilters{border:1px solid #dce3df;border-radius:10px;padding:10px;background:#fbfcfb;display:flex;gap:7px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.ss-ifilter{height:30px;border:1px solid #dce3df;border-radius:7px;background:#fff;padding:0 10px;display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;color:#5f6e7a;cursor:pointer}
+.ss-ifilter.active{background:var(--green);border-color:var(--green);color:#fff}
+.ss-count{opacity:.72}
+.ss-readyhidden{margin-left:auto;font-size:10px;color:#77858f}
+.ss-tools{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:10px}
+.ss-search,.ss-tool{height:38px;border:1px solid #dce3df;border-radius:8px;background:#fff;display:flex;align-items:center;font-size:11px;color:#71808c}
+.ss-search{padding:0 12px;gap:8px}
+.ss-tool{padding:0 11px;font-weight:700;color:#586773;cursor:pointer}
+.ss-tablebox{border:1px solid #dce3df;border-radius:12px;overflow:hidden;background:#fff}
+.ss-thead,.ss-datarow{display:grid;grid-template-columns:56px 158px 1fr 118px}
+.ss-thead{height:42px;background:#f4f7f5;border-bottom:1px solid #dce3df;align-items:center;font-size:9.5px;font-weight:900;color:#6f7e89;text-transform:uppercase;letter-spacing:.35px}
+.ss-cell{padding:11px 12px;border-right:1px solid #e7ebe9;min-width:0}
+.ss-cell:last-child{border-right:0}
+.ss-group{height:36px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:900;border-bottom:1px solid #dce3df}
+.ss-group.fatal{background:#fff0ee;color:#ac302a}
+.ss-group.warning{background:#fff5e6;color:#9f5705}
+.ss-datarow{min-height:76px;border-bottom:1px solid #e6ebe8;align-items:stretch}
+.ss-datarow.last{border-bottom:0}
+.ss-datarow.fatalrow{background:#fffafa}
+.ss-datarow .ss-cell{display:flex;flex-direction:column;justify-content:center}
+.ss-rownum{font-size:13px;font-weight:800;color:var(--ink)}
+.ss-person{font-size:13px;font-weight:800;color:var(--ink)}
+.ss-person i{font-style:italic;color:#8a95a1;font-weight:700}
+.ss-meta{font-size:10.5px;color:#71808e;margin-top:5px}
+.ss-chips{display:flex;gap:6px;flex-wrap:wrap;align-content:center}
+.ss-chip{display:inline-flex;align-items:center;min-height:28px;padding:6px 8px;border-radius:7px;font-size:10px;font-weight:800;border:1px solid;line-height:1.25}
+.ss-chip.cw{background:#fff5e6;color:#a75804;border-color:#efbd79}
+.ss-chip.cf{background:#fff0ee;color:#bd342d;border-color:#f0aaa5}
+.ss-chip.cmore{background:#fff;color:#5d6b76;border-color:#ccd6d1}
+.ss-badge{align-self:flex-start;font-size:9.5px;font-weight:900;border-radius:7px;padding:6px 8px;margin-bottom:6px}
+.ss-badge.bw{background:#fff5e6;color:#a85d06}
+.ss-badge.bf{background:#fff0ee;color:#bb332c}
+.ss-result{font-size:10px;color:#697783}
+.ss-pager{height:44px;background:#fbfcfb;border-top:1px solid #dce3df;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:10px;color:#687681}
+.ss-pages{display:flex;align-items:center;gap:6px}
+.ss-page{width:26px;height:26px;border:1px solid #dce3df;border-radius:6px;display:grid;place-items:center;background:#fff;font-weight:800;cursor:pointer}
+.ss-page.active{background:var(--green);border-color:var(--green);color:#fff}
+/* ===== Add Inquiry confirmation dialog ===== */
+.cf-overlay{position:fixed;inset:0;background:rgba(30,42,44,.58);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:70;padding:24px}
+.cf-overlay.show{display:flex}
+.cf-dialog{width:100%;max-width:590px;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(12,23,27,.34);overflow:hidden;animation:pop .18s ease}
+.cf-header{padding:26px 28px 20px;display:flex;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line)}
+.cf-icon{width:42px;height:42px;border-radius:50%;background:#fff0d4;color:#c66d00;display:grid;place-items:center;font-size:22px;font-weight:900;flex:0 0 auto}
+.cf-title{font-size:22px;font-weight:800;margin:1px 0 6px;color:var(--ink)}
+.cf-subtitle{font-size:13px;line-height:1.5;color:#6f7d8b;max-width:440px}
+.cf-x{margin-left:auto;color:#8a969f;font-size:20px;font-weight:700;cursor:pointer;background:none;border:0;line-height:1}
+.cf-body{padding:22px 28px 24px}
+.cf-issue{display:grid;grid-template-columns:42px 1fr auto;gap:13px;align-items:start;border:1px solid;border-radius:12px;padding:16px;margin-bottom:12px}
+.cf-issue.warning{background:#fff6e7;border-color:#f0ca8d}
+.cf-issue.fatal{background:#fff0ee;border-color:#efb0ab}
+.cf-iicon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:17px;font-weight:900}
+.cf-issue.warning .cf-iicon{background:#ffe6ba;color:#b96000}
+.cf-issue.fatal .cf-iicon{background:#ffd9d5;color:#c8342d}
+.cf-ititle{font-size:14px;font-weight:800;margin:1px 0 5px;color:var(--ink)}
+.cf-icopy{font-size:12px;line-height:1.5;color:#687683}
+.cf-badge{font-size:10px;font-weight:900;border-radius:7px;padding:7px 8px;white-space:nowrap}
+.cf-issue.warning .cf-badge{color:#a95900;background:#ffe7bd}
+.cf-issue.fatal .cf-badge{color:#bc3029;background:#ffdcd8}
+.cf-summary{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;background:#fbfcfb}
+.cf-stitle{font-size:17px;font-weight:800;margin-bottom:4px;color:var(--ink)}
+.cf-ssub{font-size:11.5px;color:#6f7d8b}
+.cf-check{width:38px;height:38px;border-radius:10px;background:#e8f7ed;color:#0e7e36;display:grid;place-items:center;font-size:20px;font-weight:900}
+.cf-note{margin-top:14px;font-size:11.5px;line-height:1.55;color:#687683}
+.cf-note strong{color:#44525f}
+.cf-footer{height:78px;padding:0 28px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.cf-btn{height:44px;border-radius:24px;padding:0 20px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.cf-cancel{background:#fff;border:1px solid #d5ddda;color:#53616e}
+.cf-confirm{background:var(--green);border:1px solid var(--green);color:#fff;padding:0 24px}
 </style>
 </head>
 <body>
@@ -395,7 +496,7 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 
 <!-- IMPORT MODAL -->
 <div class="overlay" id="overlay">
-  <div class="modal">
+  <div class="modal wide">
     <div class="mhead"><h2>Upload Inquiry</h2><button class="x" id="closeX">×</button></div>
     <div class="mbody">
       <div class="step"><span class="num">1</span><span class="t">Download Form Inquiry Template</span><span class="spacer"></span><button class="btn sm"><svg class="bi" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Template</button></div>
@@ -405,7 +506,7 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
 
       <div class="drop file">
         <div class="fic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22a447" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></div>
-        <div class="fname">Inquiry Records Exsample.xlsx</div>
+        <div class="fname">Inquiry Records Example.xlsx</div>
         <div class="fsize">26.35 KB</div>
         <div class="fileacts">
           <button class="linkbtn">✎ Edit File</button>
@@ -414,28 +515,39 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
       </div>
 
       <div id="vresult" style="display:none">
-        <div class="vsum">
-          <div class="vcard ok"><div class="n" id="cOk">0</div><div class="l">SIAP DITAMBAHKAN</div></div>
-          <div class="vcard wr"><div class="n" id="cWr">0</div><div class="l">PERLU DILENGKAPI</div></div>
-          <div class="vcard er"><div class="n" id="cEr">0</div><div class="l">FATAL — BUTUH FORCE</div></div>
-        </div>
-
-        <div class="toolbar">
-          <label class="switch"><input type="checkbox" id="skipToggle" checked><span class="track"></span> Lewati kolom tidak wajib (skip &amp; tetap tambahkan)</label>
-          <div class="filterchips">
-            <button class="chip on" data-f="all">Semua</button>
-            <button class="chip" data-f="wr">Perlu dilengkapi</button>
-            <button class="chip" data-f="er">Fatal</button>
+        <div class="ss-scrollcue"><span>Scroll untuk meninjau hasil validasi</span><span class="ss-line"></span><span>↓</span></div>
+        <section class="ss-results">
+          <div class="ss-rhead"><div><h2>Validation Results</h2><div class="ss-sub">Hanya inquiry yang membutuhkan perhatian yang ditampilkan.</div></div></div>
+          <div class="ss-summary">
+            <div class="ss-sum"><div class="ss-sico sg">✓</div><div><div class="ss-snum">91</div><div class="ss-slabel">Ready to import</div></div></div>
+            <div class="ss-sum"><div class="ss-sico so">!</div><div><div class="ss-snum">7</div><div class="ss-slabel">Incomplete</div></div></div>
+            <div class="ss-sum"><div class="ss-sico sr">×</div><div><div class="ss-snum">2</div><div class="ss-slabel">Fatal</div></div></div>
           </div>
-        </div>
-
-        <div class="rowlist" id="rowlist"></div>
-
-        <div class="legend">
-          <span><i style="background:var(--green)"></i> Siap ditambahkan</span>
-          <span><i style="background:var(--orange)"></i> Kolom tidak wajib kosong — bisa di-skip</span>
-          <span><i style="background:var(--red)"></i> Fatal (nomor telepon) — butuh Force Add</span>
-        </div>
+          <div class="ss-issuefilters">
+            <div class="ss-ifilter active">All issues <span class="ss-count">9</span></div>
+            <div class="ss-ifilter">Phone Number <span class="ss-count">2</span></div>
+            <div class="ss-ifilter">Inquiry Date <span class="ss-count">4</span></div>
+            <div class="ss-ifilter">Source Ads <span class="ss-count">2</span></div>
+            <div class="ss-ifilter">Chat <span class="ss-count">1</span></div>
+            <div class="ss-readyhidden">91 ready rows hidden</div>
+          </div>
+          <div class="ss-tools">
+            <div class="ss-search"><span>Search name, phone, or row...</span></div>
+            <div class="ss-tool">Severity: All&nbsp; v</div>
+            <div class="ss-tool">Sort: Fatal first&nbsp; v</div>
+          </div>
+          <div class="ss-tablebox">
+            <div class="ss-thead"><div class="ss-cell">Row</div><div class="ss-cell">Inquiry</div><div class="ss-cell">Issues</div><div class="ss-cell">Result</div></div>
+            <div class="ss-group fatal"><span>Fatal · 2 inquiries</span><span>Will not be added</span></div>
+            <div class="ss-datarow fatalrow"><div class="ss-cell"><div class="ss-rownum">8</div></div><div class="ss-cell"><div class="ss-person">Budi</div><div class="ss-meta">Source · Facebook</div></div><div class="ss-cell"><div class="ss-chips"><span class="ss-chip cf">Phone Number - belum diisi</span></div></div><div class="ss-cell"><span class="ss-badge bf">1 FATAL</span><span class="ss-result">Terblokir</span></div></div>
+            <div class="ss-datarow fatalrow"><div class="ss-cell"><div class="ss-rownum">9</div></div><div class="ss-cell"><div class="ss-person">Ika</div><div class="ss-meta">+62 812 4000 7788</div></div><div class="ss-cell"><div class="ss-chips"><span class="ss-chip cf">Phone Number - sama dengan data di baris 10</span></div></div><div class="ss-cell"><span class="ss-badge bf">1 FATAL</span><span class="ss-result">Terblokir</span></div></div>
+            <div class="ss-group warning"><span>Incomplete · 7 inquiries</span><span>Will still be added</span></div>
+            <div class="ss-datarow"><div class="ss-cell"><div class="ss-rownum">6</div></div><div class="ss-cell"><div class="ss-person">Rian</div><div class="ss-meta">+62 512 1346 1452</div></div><div class="ss-cell"><div class="ss-chips"><span class="ss-chip cw">Inquiry Date - tidak sesuai format</span><span class="ss-chip cw">Source Ads - tidak sesuai pilihan</span><span class="ss-chip cw">Chat - "C9" tidak ditemukan</span></div></div><div class="ss-cell"><span class="ss-badge bw">3 WARNING</span><span class="ss-result">Tetap di-import</span></div></div>
+            <div class="ss-datarow"><div class="ss-cell"><div class="ss-rownum">4</div></div><div class="ss-cell"><div class="ss-person">Andaleeb</div><div class="ss-meta">+62 555 5190 5595</div></div><div class="ss-cell"><div class="ss-chips"><span class="ss-chip cw">Inquiry Date - belum diisi</span></div></div><div class="ss-cell"><span class="ss-badge bw">1 WARNING</span><span class="ss-result">Tetap di-import</span></div></div>
+            <div class="ss-datarow last"><div class="ss-cell"><div class="ss-rownum">7</div></div><div class="ss-cell"><div class="ss-person"><i>Tanpa nama</i></div><div class="ss-meta">+62 556 5551 115</div></div><div class="ss-cell"><div class="ss-chips"><span class="ss-chip cw">Inquiry Date - belum diisi</span><span class="ss-chip cw">Source Ads - pilihan tidak tersedia</span><span class="ss-chip cmore">Name - belum diisi (opsional)</span></div></div><div class="ss-cell"><span class="ss-badge bw">2 WARNING</span><span class="ss-result">Tetap di-import</span></div></div>
+            <div class="ss-pager"><span>Showing 1–5 of 9 issues · Rows per page: 10</span><div class="ss-pages"><span class="ss-page">&lt;</span><span class="ss-page active">1</span><span class="ss-page">2</span><span class="ss-page">&gt;</span></div></div>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -447,6 +559,27 @@ tr.newrow{background:#fffbe9!important;animation:flash 1.6s ease}
       </div>
     </div>
   </div>
+</div>
+
+<!-- ADD INQUIRY CONFIRMATION MODAL -->
+<div class="cf-overlay" id="overlay4">
+  <section class="cf-dialog">
+    <header class="cf-header">
+      <div class="cf-icon">!</div>
+      <div><div class="cf-title">Confirm Add Inquiry</div><div class="cf-subtitle">Masih ada data yang belum lengkap dan data fatal. Periksa ringkasan berikut sebelum melanjutkan.</div></div>
+      <button class="cf-x" id="cfX">×</button>
+    </header>
+    <div class="cf-body">
+      <div class="cf-issue warning"><div class="cf-iicon">!</div><div><div class="cf-ititle">7 inquiry belum lengkap</div><div class="cf-icopy">Data ini tetap akan ditambahkan meskipun beberapa kolom belum diisi. Kekurangannya dapat dilengkapi nanti melalui CMS.</div></div><div class="cf-badge">TETAP DITAMBAHKAN</div></div>
+      <div class="cf-issue fatal"><div class="cf-iicon">×</div><div><div class="cf-ititle">2 inquiry memiliki masalah fatal</div><div class="cf-icopy">Data ini tidak akan ditambahkan karena nomor telepon belum diisi atau sama dengan data lain.</div></div><div class="cf-badge">TIDAK DITAMBAHKAN</div></div>
+      <div class="cf-summary"><div><div class="cf-stitle">98 inquiries will be added</div><div class="cf-ssub">91 siap di-import + 7 belum lengkap</div></div><div class="cf-check">✓</div></div>
+      <div class="cf-note"><strong>Lanjutkan proses?</strong> Dengan melanjutkan, 7 inquiry yang belum lengkap akan tetap masuk dan 2 inquiry fatal tidak akan ikut di-import.</div>
+    </div>
+    <footer class="cf-footer">
+      <button class="cf-btn cf-cancel" id="cfCancel">Cancel</button>
+      <button class="cf-btn cf-confirm" id="cfConfirm">Yes, Add 98 Inquiries</button>
+    </footer>
+  </section>
 </div>
 
 <!-- NEW INQUIRY MODAL -->
