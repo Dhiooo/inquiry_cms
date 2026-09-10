@@ -223,8 +223,22 @@ function fmtDate(iso){const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','
 
 /* ===== Modal wiring ===== */
 const overlay=document.getElementById('overlay');
-function openModal(){overlay.classList.add('show');}
-function closeModal(){overlay.classList.remove('show');resetModal();}
+let dashboardScrollY=0;
+function lockDashboardScroll(){
+  if(document.body.classList.contains('modal-open')) return;
+  dashboardScrollY=window.scrollY;
+  document.body.style.top=`-${dashboardScrollY}px`;
+  document.documentElement.classList.add('modal-open');
+  document.body.classList.add('modal-open');
+}
+function unlockDashboardScroll(){
+  document.documentElement.classList.remove('modal-open');
+  document.body.classList.remove('modal-open');
+  document.body.style.top='';
+  window.scrollTo(0,dashboardScrollY);
+}
+function openModal(){overlay.classList.add('show');lockDashboardScroll();}
+function closeModal(){overlay.classList.remove('show');unlockDashboardScroll();resetModal();}
 function resetModal(){document.getElementById('vresult').style.display='none';document.getElementById('addBtn').disabled=true;document.getElementById('addBtn').textContent='Add Inquiry';document.getElementById('fsummary').innerHTML='Tekan <b>Validate Inquiries</b> untuk mengecek dokumen.';}
 document.getElementById('importBtn').onclick=openModal;
 document.getElementById('closeX').onclick=closeModal;
@@ -232,7 +246,7 @@ document.getElementById('closeBtn').onclick=closeModal;
 overlay.onclick=e=>{if(e.target===overlay)closeModal();};
 document.getElementById('validateBtn').onclick=()=>{
   const vr=document.getElementById('vresult'); vr.style.display='block';
-  document.getElementById('fsummary').innerHTML='<span style="font-size:14px;font-weight:800;color:#3a444c">98 inquiries will be added</span><br><span style="color:var(--muted)">91 ready + 7 incomplete · 2 fatal excluded</span>';
+  document.getElementById('fsummary').innerHTML='<span style="font-size:14px;font-weight:600;color:#3a444c">98 inquiries will be added</span><br><span style="color:var(--muted)">91 ready + 7 incomplete · 2 fatal excluded</span>';
   const ab=document.getElementById('addBtn'); ab.disabled=false; ab.textContent='Add Inquiry (98)';
   try{ vr.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
 };
