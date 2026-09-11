@@ -220,23 +220,54 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
 .dupok.show{display:block}
 .statusdesc{font-size:12px;color:var(--muted);padding:2px}
 .statusdesc b{color:#3a444c}
-/* action menu */
-.amenu{position:fixed;z-index:80;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 34px rgba(16,32,40,.18);padding:6px;width:262px;display:none;max-height:80vh;overflow-y:auto}
+/* action menu — compact two-panel status workflow */
+.amenu{position:fixed;z-index:80;background:#fff;border:1px solid var(--line2);border-radius:14px;box-shadow:0 18px 45px rgba(16,32,40,.20);width:min(420px,calc(100vw - 20px));display:none;overflow:hidden;color:var(--ink)}
 .amenu.show{display:block}
-.amenu .mi{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;color:#4a545c}
-.amenu .mi:hover{background:#f6f8f9}
-.amenu .mi.red{color:var(--red)}
-.amenu .mi .k{width:18px;text-align:center}
-.amenu .sep{font-size:10.5px;letter-spacing:.1em;color:var(--muted2);font-weight:700;padding:9px 10px 4px}
-.amenu .st{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
-.amenu .st:hover{background:#f6f8f9}
-.amenu .st.sel{background:var(--green-soft)}
-.amenu .st .stcode{flex-shrink:0;min-width:26px;height:20px;padding:0 6px;border-radius:6px;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-top:1px}
-.amenu .st .sttext{min-width:0}
-.amenu .st .stlbl{font-size:13px;font-weight:700;color:#2b3843;line-height:1.2}
-.amenu .st .std{font-size:11px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:176px}
-.amenu .st .chk{margin-left:auto;color:var(--green);font-weight:700;align-self:center}
-.amenu .divider{height:1px;background:var(--line);margin:5px 2px}
+.amenu *{box-sizing:border-box}
+.amenu button,.amenu input{font:inherit}
+.amenu .aquick{padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.amenu .qbtn{height:40px;border:0;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px;color:#2b3843;font-size:12px;font-weight:650;cursor:pointer}
+.amenu .qbtn+ .qbtn{border-left:1px solid var(--line2);border-radius:0 8px 8px 0}
+.amenu .qbtn:hover{background:#f6f8f9}
+.amenu svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.amenu .divider{height:1px;background:var(--line);margin:5px 12px}
+.amenu .ahead{padding:8px 14px 7px}
+.amenu .ahead b{display:block;font-size:12px;letter-spacing:.12em;color:#2b3843}
+.amenu .ahead span{display:block;margin-top:2px;font-size:11px;color:var(--muted)}
+.amenu .asearch{height:38px;margin:0 12px 10px;border:1px solid var(--line2);border-radius:9px;color:var(--muted);display:flex;align-items:center;gap:9px;padding:0 11px;background:#fff;transition:.15s}
+.amenu .asearch:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,164,71,.10)}
+.amenu .asearch svg{width:15px;height:15px;color:#7e8b99}
+.amenu .asearch input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#3a444c;font-size:12px}
+.amenu .asearch input::placeholder{color:#8a96a5}
+.amenu .atwopane{height:292px;display:grid;grid-template-columns:138px minmax(0,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.amenu .acats{background:#fafbfc;border-right:1px solid var(--line2);padding:9px}
+.amenu .acat{width:100%;height:43px;border:0;background:transparent;border-radius:8px;padding:0 7px;display:flex;align-items:center;gap:7px;color:#5b6878;font-size:11px;text-align:left;cursor:pointer}
+.amenu .acat:hover{background:#f1f4f5}
+.amenu .acat.active{background:var(--green-soft);color:var(--green-dark);font-weight:700}
+.amenu .acode{min-width:29px;height:24px;padding:0 5px;border-radius:6px;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex:none}
+.amenu .acount{margin-left:auto;background:#edf1f4;color:#6f7b89;padding:2px 6px;border-radius:99px;font-size:9px}
+.amenu .adetails{padding:7px 8px;overflow-y:auto;overscroll-behavior:contain}
+.amenu .adtitle{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 8px;gap:8px}
+.amenu .adtitle b{font-size:12px;color:#2b3843}
+.amenu .adtitle span{font-size:10px;color:var(--muted);white-space:nowrap}
+.amenu .astatus{width:100%;min-height:48px;border:1px solid transparent;background:#fff;border-radius:8px;padding:7px;display:flex;align-items:flex-start;gap:7px;text-align:left;cursor:pointer;margin-bottom:2px;color:inherit}
+.amenu .astatus:hover{background:#f6f8f9}
+.amenu .astatus.selected{background:var(--green-soft);border-color:#cfead7}
+.amenu .astxt{min-width:0;flex:1}
+.amenu .astxt b{display:block;margin:1px 0 3px;font-size:10.5px;line-height:1.2;color:#2b3843}
+.amenu .astxt p{font-size:9.5px;color:#778496;line-height:1.25;white-space:normal}
+.amenu .acurrent{margin-left:auto;color:#137d39;background:#d9f1e1;border:1px solid #c3e6cf;border-radius:999px;padding:3px 6px;font-size:8px;font-weight:700;white-space:nowrap;flex:none}
+.amenu .aempty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:12px;padding:24px;line-height:1.5}
+.amenu .adelete{width:calc(100% - 16px);height:42px;margin:5px 8px;border:0;background:#fff;border-radius:8px;display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--red);font-size:12px;cursor:pointer}
+.amenu .adelete:hover{background:var(--red-soft)}
+.amenu .adelete svg{width:15px;height:15px}
+.dotsbtn.menu-open{border-color:var(--green);color:var(--green);box-shadow:0 0 0 3px rgba(34,164,71,.12)}
+@media(max-width:520px){
+  .amenu .atwopane{grid-template-columns:122px minmax(0,1fr)}
+  .amenu .acats{padding:7px 5px}
+  .amenu .acat{padding:0 5px;gap:5px}
+  .amenu .acode{min-width:26px}
+}
 /* toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#26313a;color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;z-index:90;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}

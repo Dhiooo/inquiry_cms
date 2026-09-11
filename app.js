@@ -497,37 +497,134 @@ function saveInquiry(){
 }
 
 /* =====================================================================
-   Action menu (Problem 4: specific actions + granular status)
+   Action menu — compact two-panel status workflow
    ===================================================================== */
 let menuIdx=null;
-function openActionMenu(ev, idx){
-  ev.stopPropagation(); menuIdx=idx; const r=dashRows[idx]; const m=el('actionMenu');
-  let lastCat=null, statusItems='';
-  STATUS_LIST.forEach(s=>{
-    if(s.cat!==lastCat){statusItems+=`<div class="sep">${s.cat}</div>`;lastCat=s.cat;}
-    statusItems+=`<div class="st${r.chat===s.code?' sel':''}" onclick="setStatus(${idx},'${s.code}')">
-      <span class="stcode" style="background:${CLS_COLOR[s.cls]}">${s.code}</span>
-      <div class="sttext"><div class="stlbl">${esc(s.lbl)}</div><div class="std">${esc(s.desc)}</div></div>
-      ${r.chat===s.code?'<span class="chk">✓</span>':''}
-    </div>`;
-  });
-  m.innerHTML = `
-    <div class="mi" onclick="actDetail(${idx})"><span class="k">👁</span> View Detail</div>
-    <div class="mi" onclick="actEdit(${idx})"><span class="k">✎</span> Edit Inquiry</div>
-    <div class="divider"></div>
-    <div class="sep" style="color:#3a444c;font-size:11px">UBAH STATUS · sesuai kode spreadsheet</div>
-    ${statusItems}
-    <div class="divider"></div>
-    <div class="mi red" onclick="actDelete(${idx})"><span class="k">🗑</span> Delete</div>`;
-  m.classList.add('show');
-  const btn=ev.currentTarget.getBoundingClientRect(); const mw=262;
-  let left=btn.right-mw; if(left<10)left=10; if(left+mw>window.innerWidth-10)left=window.innerWidth-mw-10;
-  let top=btn.bottom+6; const mh=m.offsetHeight;
-  if(top+mh>window.innerHeight-10) top=Math.max(10, btn.top-mh-6);
-  m.style.left=left+'px'; m.style.top=top+'px';
+let actionCategory='';
+let actionQuery='';
+
+const ACTION_ICONS={
+  eye:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.7"/></svg>`,
+  edit:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.8 6.2 4 4"/></svg>`,
+  search:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>`,
+  trash:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="m6.5 7 1 13h9l1-13"/><path d="M10 11v5M14 11v5"/></svg>`
+};
+const ACTION_CAT_META={
+  'Registered':{code:'A',label:'Registered'},
+  'Waiting':{code:'B',label:'Waiting'},
+  'No Response':{code:'C',label:'No Response'},
+  'Issues':{code:'D',label:'Issues'},
+  'Low customer quality':{code:'E',label:'Low Quality'},
+  'Others':{code:'F',label:'Others'}
+};
+
+function actionCatMeta(cat){return ACTION_CAT_META[cat]||{code:'?',label:cat};}
+function actionButtonColor(s){return CLS_COLOR[s.cls]||CLS_COLOR.other;}
+function actionStatusTitle(s){
+  const short={
+    A:'Sudah terdaftar', B:'Menunggu keputusan',
+    C1:'Pesan belum dibaca', C2:'Sudah dibaca, belum dibalas',
+    C3:'Tidak merespons setelah ditanya', C4:'Tidak merespons tawaran jadwal',
+    C5:'Tidak merespons permintaan data', D1:'Terkendala harga',
+    D2:'Terkendala lokasi atau jarak', D3:'Terkendala jadwal',
+    D4:'Terkendala program belajar', E1:'Tidak tertarik atau belum paham',
+    E2:'Inquiry iseng atau prank', F1:'Alasan lainnya', F2:'Perlu penjelasan tambahan'
+  };
+  return short[s.code]||s.lbl;
 }
-function closeActionMenu(){ el('actionMenu').classList.remove('show'); menuIdx=null; }
-window.setStatus=function(idx,code){ dashRows[idx].chat=code; renderDash(); closeActionMenu(); toast('Status → '+statusMeta(code).lbl); };
+
+function actionMenuShell(idx){
+  return `<div class="aquick">
+    <button type="button" class="qbtn" onclick="actDetail(${idx})">${ACTION_ICONS.eye}<span>View Detail</span></button>
+    <button type="button" class="qbtn" onclick="actEdit(${idx})">${ACTION_ICONS.edit}<span>Edit Inquiry</span></button>
+  </div>
+  <div class="divider"></div>
+  <div class="ahead"><b>UBAH STATUS</b><span>Pilih kategori, lalu alasan yang paling sesuai</span></div>
+  <label class="asearch">${ACTION_ICONS.search}<input id="actionSearch" type="search" placeholder="Cari status atau kode..." autocomplete="off" oninput="filterActionStatus(this.value)"></label>
+  <div class="atwopane"><div class="acats" id="actionCats"></div><div class="adetails" id="actionDetails"></div></div>
+  <button type="button" class="adelete" onclick="actDelete(${idx})">${ACTION_ICONS.trash}<span>Delete Inquiry</span></button>`;
+}
+
+function renderActionStatusPane(){
+  if(menuIdx===null) return;
+  const r=dashRows[menuIdx];
+  if(!r) return closeActionMenu();
+  const cats=statusCats();
+  const catsEl=el('actionCats');
+  const detailsEl=el('actionDetails');
+  if(!catsEl||!detailsEl)return;
+
+  catsEl.innerHTML=cats.map(cat=>{
+    const meta=actionCatMeta(cat);
+    const first=STATUS_LIST.find(s=>s.cat===cat);
+    const count=STATUS_LIST.filter(s=>s.cat===cat).length;
+    return `<button type="button" class="acat${!actionQuery&&actionCategory===cat?' active':''}" onclick="event.stopPropagation();pickActionCategory('${cat}')">
+      <span class="acode" style="background:${actionButtonColor(first)}">${meta.code}</span><span>${esc(meta.label)}</span><span class="acount">${count}</span>
+    </button>`;
+  }).join('');
+
+  const q=actionQuery.trim().toLowerCase();
+  const choices=q
+    ? STATUS_LIST.filter(s=>[s.code,s.cat,s.lbl,s.desc,actionStatusTitle(s)].join(' ').toLowerCase().includes(q))
+    : STATUS_LIST.filter(s=>s.cat===actionCategory);
+  const title=q?'Hasil pencarian':actionCatMeta(actionCategory).code+' · '+actionCatMeta(actionCategory).label;
+  detailsEl.innerHTML=`<div class="adtitle"><b>${esc(title)}</b><span>${choices.length} ${q?'hasil':'alasan'}</span></div>`+
+    (choices.length?choices.map(s=>`<button type="button" class="astatus${r.chat===s.code?' selected':''}" onclick="setStatus(${menuIdx},'${s.code}')">
+      <span class="acode" style="background:${actionButtonColor(s)}">${s.code}</span>
+      <span class="astxt"><b>${esc(actionStatusTitle(s))}</b><p>${esc(s.desc)}</p></span>
+      ${r.chat===s.code?'<span class="acurrent">Saat ini</span>':''}
+    </button>`).join(''):`<div class="aempty">Status tidak ditemukan.<br>Coba kode atau kata kunci lain.</div>`);
+}
+
+window.pickActionCategory=function(cat){
+  actionCategory=cat; actionQuery='';
+  const search=el('actionSearch'); if(search)search.value='';
+  renderActionStatusPane();
+};
+window.filterActionStatus=function(value){actionQuery=value||'';renderActionStatusPane();};
+
+function positionActionMenu(btn){
+  const m=el('actionMenu');
+  const rect=btn.getBoundingClientRect();
+  const gap=7, pad=10;
+  const mw=m.offsetWidth, mh=m.offsetHeight;
+  let left=rect.right-mw;
+  left=Math.max(pad,Math.min(left,window.innerWidth-mw-pad));
+  let top=rect.bottom+gap;
+  if(top+mh>window.innerHeight-pad) top=rect.top-mh-gap;
+  top=Math.max(pad,Math.min(top,window.innerHeight-mh-pad));
+  m.style.left=Math.round(left)+'px'; m.style.top=Math.round(top)+'px';
+}
+
+function openActionMenu(ev,idx){
+  ev.stopPropagation();
+  const clicked=ev.currentTarget;
+  if(menuIdx===idx&&el('actionMenu').classList.contains('show')){closeActionMenu();return;}
+  closeActionMenu();
+  menuIdx=idx; actionQuery='';
+  const current=statusMeta(dashRows[idx].chat);
+  actionCategory=current.cat&&statusCats().includes(current.cat)?current.cat:statusCats()[0];
+  const m=el('actionMenu');
+  m.innerHTML=actionMenuShell(idx);
+  m.classList.add('show');
+  clicked.classList.add('menu-open');
+  clicked.setAttribute('aria-expanded','true');
+  renderActionStatusPane();
+  positionActionMenu(clicked);
+  requestAnimationFrame(()=>{const search=el('actionSearch');if(search)search.setAttribute('aria-label','Cari status atau kode');});
+}
+function closeActionMenu(){
+  const m=el('actionMenu'); if(m)m.classList.remove('show');
+  document.querySelectorAll('.dotsbtn.menu-open').forEach(b=>{b.classList.remove('menu-open');b.setAttribute('aria-expanded','false');});
+  menuIdx=null; actionQuery='';
+}
+window.setStatus=function(idx,code){
+  const previous=dashRows[idx].chat;
+  if(previous===code){closeActionMenu();return;}
+  dashRows[idx].chat=code; renderDash(); closeActionMenu();
+  toast('Status diubah ke '+code+' · '+statusMeta(code).lbl);
+};
+
 const DICON={
  building:'<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M9 8h.01M12 8h.01M15 8h.01M9 12h.01M12 12h.01M15 12h.01"/></svg>',
  user:'<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
