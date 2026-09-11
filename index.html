@@ -221,44 +221,44 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
 .statusdesc{font-size:12px;color:var(--muted);padding:2px}
 .statusdesc b{color:#3a444c}
 /* action menu — compact two-panel status workflow */
-.amenu{position:fixed;z-index:80;background:#fff;border:1px solid var(--line2);border-radius:14px;box-shadow:0 18px 45px rgba(16,32,40,.20);width:min(420px,calc(100vw - 20px));display:none;overflow:hidden;color:var(--ink)}
+.amenu{position:fixed;z-index:80;background:#fff;border:1px solid var(--line2);border-radius:14px;box-shadow:0 18px 45px rgba(16,32,40,.20);width:min(430px,calc(100vw - 20px));display:none;overflow:hidden;color:var(--ink)}
 .amenu.show{display:block}
 .amenu *{box-sizing:border-box}
 .amenu button,.amenu input{font:inherit}
 .amenu .aquick{padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.amenu .qbtn{height:40px;border:0;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px;color:#2b3843;font-size:12px;font-weight:650;cursor:pointer}
+.amenu .qbtn{height:42px;border:0;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:9px;padding:0 8px;color:#2b3843;font-size:13px;font-weight:650;cursor:pointer}
 .amenu .qbtn+ .qbtn{border-left:1px solid var(--line2);border-radius:0 8px 8px 0}
 .amenu .qbtn:hover{background:#f6f8f9}
-.amenu svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.amenu svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .amenu .divider{height:1px;background:var(--line);margin:5px 12px}
 .amenu .ahead{padding:8px 14px 7px}
-.amenu .ahead b{display:block;font-size:12px;letter-spacing:.12em;color:#2b3843}
-.amenu .ahead span{display:block;margin-top:2px;font-size:11px;color:var(--muted)}
+.amenu .ahead b{display:block;font-size:13px;letter-spacing:.12em;color:#2b3843}
+.amenu .ahead span{display:block;margin-top:2px;font-size:11.5px;color:var(--muted)}
 .amenu .asearch{height:38px;margin:0 12px 10px;border:1px solid var(--line2);border-radius:9px;color:var(--muted);display:flex;align-items:center;gap:9px;padding:0 11px;background:#fff;transition:.15s}
 .amenu .asearch:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,164,71,.10)}
 .amenu .asearch svg{width:15px;height:15px;color:#7e8b99}
-.amenu .asearch input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#3a444c;font-size:12px}
+.amenu .asearch input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#3a444c;font-size:12.5px}
 .amenu .asearch input::placeholder{color:#8a96a5}
-.amenu .atwopane{height:292px;display:grid;grid-template-columns:138px minmax(0,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.amenu .acats{background:#fafbfc;border-right:1px solid var(--line2);padding:9px}
-.amenu .acat{width:100%;height:43px;border:0;background:transparent;border-radius:8px;padding:0 7px;display:flex;align-items:center;gap:7px;color:#5b6878;font-size:11px;text-align:left;cursor:pointer}
+.amenu .atwopane{height:292px;display:grid;grid-template-columns:142px minmax(0,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.amenu .acats{background:#fafbfc;border-right:1px solid var(--line2);padding:9px;overflow-y:auto;overscroll-behavior:contain}
+.amenu .acat{width:100%;height:43px;border:0;background:transparent;border-radius:8px;padding:0 7px;display:flex;align-items:center;gap:7px;color:#5b6878;font-size:11.5px;text-align:left;cursor:pointer}
 .amenu .acat:hover{background:#f1f4f5}
 .amenu .acat.active{background:var(--green-soft);color:var(--green-dark);font-weight:700}
 .amenu .acode{min-width:29px;height:24px;padding:0 5px;border-radius:6px;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex:none}
 .amenu .acount{margin-left:auto;background:#edf1f4;color:#6f7b89;padding:2px 6px;border-radius:99px;font-size:9px}
 .amenu .adetails{padding:7px 8px;overflow-y:auto;overscroll-behavior:contain}
 .amenu .adtitle{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 8px;gap:8px}
-.amenu .adtitle b{font-size:12px;color:#2b3843}
+.amenu .adtitle b{font-size:12.5px;color:#2b3843}
 .amenu .adtitle span{font-size:10px;color:var(--muted);white-space:nowrap}
 .amenu .astatus{width:100%;min-height:48px;border:1px solid transparent;background:#fff;border-radius:8px;padding:7px;display:flex;align-items:flex-start;gap:7px;text-align:left;cursor:pointer;margin-bottom:2px;color:inherit}
 .amenu .astatus:hover{background:#f6f8f9}
 .amenu .astatus.selected{background:var(--green-soft);border-color:#cfead7}
 .amenu .astxt{min-width:0;flex:1}
-.amenu .astxt b{display:block;margin:1px 0 3px;font-size:10.5px;line-height:1.2;color:#2b3843}
-.amenu .astxt p{font-size:9.5px;color:#778496;line-height:1.25;white-space:normal}
+.amenu .astxt b{display:block;margin:1px 0 3px;font-size:11.5px;line-height:1.2;color:#2b3843}
+.amenu .astxt p{font-size:10.5px;color:#778496;line-height:1.3;white-space:normal}
 .amenu .acurrent{margin-left:auto;color:#137d39;background:#d9f1e1;border:1px solid #c3e6cf;border-radius:999px;padding:3px 6px;font-size:8px;font-weight:700;white-space:nowrap;flex:none}
 .amenu .aempty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:12px;padding:24px;line-height:1.5}
-.amenu .adelete{width:calc(100% - 16px);height:42px;margin:5px 8px;border:0;background:#fff;border-radius:8px;display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--red);font-size:12px;cursor:pointer}
+.amenu .adelete{width:calc(100% - 16px);height:44px;margin:5px 8px;border:0;background:#fff;border-radius:8px;display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--red);font-size:13px;cursor:pointer}
 .amenu .adelete:hover{background:var(--red-soft)}
 .amenu .adelete svg{width:15px;height:15px}
 .dotsbtn.menu-open{border-color:var(--green);color:var(--green);box-shadow:0 0 0 3px rgba(34,164,71,.12)}
@@ -268,6 +268,21 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
   .amenu .acat{padding:0 5px;gap:5px}
   .amenu .acode{min-width:26px}
 }
+/* delete confirmation */
+.confirm-overlay{position:fixed;inset:0;z-index:110;background:rgba(28,38,45,.48);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;padding:20px}
+.confirm-overlay.show{display:flex}
+.confirm-card{width:min(420px,100%);background:#fff;border:1px solid var(--line2);border-radius:16px;box-shadow:0 24px 60px rgba(16,32,40,.28);padding:24px;animation:pop .18s ease}
+.confirm-icon{width:46px;height:46px;border-radius:12px;background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.confirm-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.confirm-card h3{font-size:18px;color:#2b3843;margin-bottom:7px}
+.confirm-card p{font-size:13px;color:var(--muted);line-height:1.55}
+.confirm-target{margin-top:14px;padding:11px 12px;background:#f7f9fa;border:1px solid var(--line);border-radius:10px;font-size:13px;color:#3a444c;font-weight:600}
+.confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.confirm-actions .cbtn{height:40px;border-radius:20px;padding:0 18px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.confirm-actions .cancel{background:#fff;border:1px solid var(--line2);color:#5c666e}
+.confirm-actions .cancel:hover{background:#f6f8f9}
+.confirm-actions .danger{background:var(--red);border:1px solid var(--red);color:#fff}
+.confirm-actions .danger:hover{filter:brightness(.94)}
 /* toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#26313a;color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;z-index:90;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -334,7 +349,12 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
 .ddi.sel{background:var(--green-soft);font-weight:600}
 .ddck{display:none;margin-left:auto;color:var(--green);font-weight:700}
 .ddi.sel .ddck{display:inline}
-/* detail modal */
+/* detail modal — fixed center with internal scrolling */
+#overlay3{align-items:center;justify-content:center;padding:24px;overflow:hidden}
+#overlay3 .modal.detail{max-width:620px;max-height:calc(100dvh - 48px);display:flex;flex-direction:column;margin:auto}
+#overlay3 .dhero{flex:none}
+#overlay3 .mbody{flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain}
+#overlay3 .mfoot{flex:none;margin-top:0;background:#fff}
 .modal.detail{max-width:620px}
 .dhero{position:relative;background:linear-gradient(135deg,#22a447,#178a3a);color:#fff;padding:26px 26px 22px;text-align:center}
 .dhero .dx{position:absolute;top:14px;right:16px;color:#fff;opacity:.9;font-size:22px;background:none;border:0;cursor:pointer;line-height:1}
@@ -688,6 +708,18 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
   </div>
 </div>
 <div id="actionMenu" class="amenu"></div>
+<div id="deleteConfirm" class="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+  <div class="confirm-card">
+    <div class="confirm-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="m6.5 7 1 13h9l1-13"/><path d="M10 11v5M14 11v5"/></svg></div>
+    <h3 id="deleteConfirmTitle">Hapus inquiry ini?</h3>
+    <p>Tindakan ini akan menghapus data inquiry dari daftar. Pastikan data yang dipilih sudah benar.</p>
+    <div class="confirm-target" id="deleteConfirmTarget"></div>
+    <div class="confirm-actions">
+      <button type="button" class="cbtn cancel" id="deleteNo">Tidak, batal</button>
+      <button type="button" class="cbtn danger" id="deleteYes">Ya, hapus</button>
+    </div>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 <script src="app.js"></script>
 </body>

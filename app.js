@@ -542,7 +542,7 @@ function actionMenuShell(idx){
   <div class="ahead"><b>UBAH STATUS</b><span>Pilih kategori, lalu alasan yang paling sesuai</span></div>
   <label class="asearch">${ACTION_ICONS.search}<input id="actionSearch" type="search" placeholder="Cari status atau kode..." autocomplete="off" oninput="filterActionStatus(this.value)"></label>
   <div class="atwopane"><div class="acats" id="actionCats"></div><div class="adetails" id="actionDetails"></div></div>
-  <button type="button" class="adelete" onclick="actDelete(${idx})">${ACTION_ICONS.trash}<span>Delete Inquiry</span></button>`;
+  <button type="button" class="adelete" onclick="openDeleteConfirm(${idx})">${ACTION_ICONS.trash}<span>Delete Inquiry</span></button>`;
 }
 
 function renderActionStatusPane(){
@@ -558,7 +558,7 @@ function renderActionStatusPane(){
     const meta=actionCatMeta(cat);
     const first=STATUS_LIST.find(s=>s.cat===cat);
     const count=STATUS_LIST.filter(s=>s.cat===cat).length;
-    return `<button type="button" class="acat${!actionQuery&&actionCategory===cat?' active':''}" onclick="event.stopPropagation();pickActionCategory('${cat}')">
+    return `<button type="button" class="acat${!actionQuery&&actionCategory===cat?' active':''}" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation();pickActionCategory('${cat}')">
       <span class="acode" style="background:${actionButtonColor(first)}">${meta.code}</span><span>${esc(meta.label)}</span><span class="acount">${count}</span>
     </button>`;
   }).join('');
@@ -586,14 +586,44 @@ window.filterActionStatus=function(value){actionQuery=value||'';renderActionStat
 function positionActionMenu(btn){
   const m=el('actionMenu');
   const rect=btn.getBoundingClientRect();
-  const gap=7, pad=10;
-  const mw=m.offsetWidth, mh=m.offsetHeight;
+  const gap=7,pad=10,mw=m.offsetWidth;
+
+  // Reset batas dari pembukaan sebelumnya, lalu ukur ukuran natural menu.
+  m.style.maxHeight='none';
+  m.style.overflowY='hidden';
+  const mh=m.offsetHeight;
+  const roomBelow=window.innerHeight-rect.bottom-gap-pad;
+  const roomAbove=rect.top-gap-pad;
+  const viewportRoom=window.innerHeight-(pad*2);
+
+  let top,placement;
+  if(roomBelow>=mh){
+    // Baris atas/tengah: buka normal ke bawah.
+    top=rect.bottom+gap;
+    placement='bottom';
+  }else if(roomAbove>=mh){
+    // Baris bawah: balik ke atas tanpa mengubah ukuran menu.
+    top=rect.top-gap-mh;
+    placement='top';
+  }else if(mh<=viewportRoom){
+    // Jika menu tidak muat sepenuhnya di atas maupun di bawah tombol, jangan
+    // memotongnya berdasarkan ruang di satu sisi. Geser seluruh menu ke dalam
+    // viewport; popover boleh melewati posisi tombol agar semua opsi tetap utuh.
+    top=Math.min(Math.max(rect.bottom+gap,pad),window.innerHeight-mh-pad);
+    placement='viewport-fit';
+  }else{
+    // Hanya viewport yang benar-benar pendek yang memakai scroll menu.
+    top=pad;
+    m.style.maxHeight=viewportRoom+'px';
+    m.style.overflowY='auto';
+    placement='viewport-constrained';
+  }
+
   let left=rect.right-mw;
   left=Math.max(pad,Math.min(left,window.innerWidth-mw-pad));
-  let top=rect.bottom+gap;
-  if(top+mh>window.innerHeight-pad) top=rect.top-mh-gap;
-  top=Math.max(pad,Math.min(top,window.innerHeight-mh-pad));
-  m.style.left=Math.round(left)+'px'; m.style.top=Math.round(top)+'px';
+  m.dataset.placement=placement;
+  m.style.left=Math.round(left)+'px';
+  m.style.top=Math.round(top)+'px';
 }
 
 function openActionMenu(ev,idx){
@@ -651,12 +681,40 @@ window.actDetail=function(idx){
   el('overlay3').classList.add('show');
 };
 window.actEdit=function(idx){ closeActionMenu(); openEditInquiry(idx); };
-window.actDelete=function(idx){ const r=dashRows[idx]; closeActionMenu(); dashRows.splice(idx,1); renderDash(); toast('Inquiry "'+(r.student||r.phone)+'" dihapus.'); };
+
+let deleteIdx=null;
+window.openDeleteConfirm=function(idx){
+  const r=dashRows[idx];
+  if(!r)return;
+  deleteIdx=idx;
+  closeActionMenu();
+  el('deleteConfirmTarget').textContent=(r.student||r.parent||'Tanpa nama')+' · '+(r.code||'')+' '+(r.phone||'');
+  el('deleteConfirm').classList.add('show');
+  requestAnimationFrame(()=>el('deleteNo').focus());
+};
+function closeDeleteConfirm(){
+  el('deleteConfirm').classList.remove('show');
+  deleteIdx=null;
+}
+function confirmDelete(){
+  if(deleteIdx===null||!dashRows[deleteIdx])return closeDeleteConfirm();
+  const r=dashRows[deleteIdx];
+  dashRows.splice(deleteIdx,1);
+  closeDeleteConfirm();
+  renderDash();
+  toast('Inquiry "'+(r.student||r.phone)+'" dihapus.');
+}
 window.openActionMenu=openActionMenu;
 
 /* global close handlers */
 document.addEventListener('click', e=>{ if(!e.target.closest('.amenu') && !e.target.closest('.dotsbtn')) closeActionMenu(); });
-document.addEventListener('scroll', function(e){ const t=e.target; if(t && t.nodeType===1 && t.closest && t.closest('.amenu')) return; closeActionMenu(); }, true);
+document.addEventListener('scroll',function(e){
+  const t=e.target;
+  // Scroll internal kategori/detail tidak menutup menu.
+  if(t&&t.nodeType===1&&t.closest&&t.closest('.amenu,.acats,.adetails'))return;
+  // Menu fixed ditutup saat halaman/tabel bergeser agar anchor tetap akurat.
+  closeActionMenu();
+},true);
 
 /* wire New Inquiry modal */
 el('newBtn').onclick=openNewInquiry;
@@ -669,3 +727,9 @@ initForm();
 el('dX').onclick=closeDetail; el('dClose').onclick=closeDetail;
 el('overlay3').onclick=e=>{ if(e.target===el('overlay3')) closeDetail(); };
 el('dEdit').onclick=()=>{ closeDetail(); openEditInquiry(detailIdx); };
+
+/* wire Delete confirmation */
+el('deleteNo').onclick=closeDeleteConfirm;
+el('deleteYes').onclick=confirmDelete;
+el('deleteConfirm').onclick=e=>{if(e.target===el('deleteConfirm'))closeDeleteConfirm();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&el('deleteConfirm').classList.contains('show'))closeDeleteConfirm();});
