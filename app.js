@@ -586,7 +586,7 @@ window.filterActionStatus=function(value){actionQuery=value||'';renderActionStat
 function positionActionMenu(btn){
   const m=el('actionMenu');
   const rect=btn.getBoundingClientRect();
-  const gap=7,pad=10,mw=m.offsetWidth;
+  const gap=7,sideGap=10,pad=10,mw=m.offsetWidth;
 
   // Reset batas dari pembukaan sebelumnya, lalu ukur ukuran natural menu.
   m.style.maxHeight='none';
@@ -619,9 +619,17 @@ function positionActionMenu(btn){
     placement='viewport-constrained';
   }
 
-  let left=rect.right-mw;
+  // Utamakan seluruh panel berada di sebelah kiri tombol action. Dengan begitu
+  // tombol yang diklik serta tombol pada baris atas/bawah tetap terlihat.
+  let left=rect.left-sideGap-mw;
+  let horizontalPlacement='left';
+  if(left<pad){
+    left=rect.right+sideGap;
+    horizontalPlacement='right';
+  }
   left=Math.max(pad,Math.min(left,window.innerWidth-mw-pad));
   m.dataset.placement=placement;
+  m.dataset.horizontalPlacement=horizontalPlacement;
   m.style.left=Math.round(left)+'px';
   m.style.top=Math.round(top)+'px';
 }
