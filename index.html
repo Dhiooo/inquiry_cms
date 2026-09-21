@@ -123,6 +123,17 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
 .linkbtn{background:none;border:0;color:var(--green);font-weight:600;font-family:inherit;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .hint{color:var(--muted);font-size:12.5px}
 
+/* browser-only spreadsheet upload */
+.drop.upload-zone{border:1.5px dashed var(--line2);background:#fcfdfd;cursor:pointer;position:relative}
+.drop.upload-zone:hover,.drop.upload-zone.drag{border-color:var(--green);background:var(--green-soft)}
+.drop.upload-zone:focus-visible{outline:3px solid rgba(34,164,71,.22);outline-offset:3px}
+.drop.upload-zone .upload-title{font-weight:700;color:#2b3843;font-size:14px}
+.drop.upload-zone .upload-help{color:var(--muted);font-size:12.5px;margin-top:5px}
+.drop.upload-zone .upload-error{display:none;color:var(--red);font-size:12.5px;margin-top:10px;font-weight:600}
+.drop.upload-zone.has-error .upload-error{display:block}
+.drop.upload-zone.has-file{border-style:solid;background:#fcfdfd;cursor:default}
+.file-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
 /* validation summary */
 .vsum{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
 .vcard{border-radius:12px;padding:13px 14px;border:1px solid var(--line);display:flex;align-items:center;gap:11px;text-align:left}
@@ -573,13 +584,15 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
       <div class="mselect">HQ Training <span style="color:var(--muted2);display:inline-flex"><svg class="ci" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>
       <div class="step"><span class="num">3</span><span class="t">Upload Inquiry Data</span></div>
 
-      <div class="drop file">
-        <div class="fic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22a447" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></div>
-        <div class="fname">Inquiry Records Example.xlsx</div>
-        <div class="fsize">26.35 KB</div>
+      <div class="drop upload-zone" id="uploadZone" tabindex="0" role="button" aria-label="Pilih spreadsheet inquiry">
+        <input class="file-input" id="spreadsheetInput" type="file" accept=".xlsx,.xls,.csv" />
+        <div class="fic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22a447" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="11"/><polyline points="9 14 12 11 15 14"/></svg></div>
+        <div class="upload-title" id="uploadTitle">Drop spreadsheet di sini</div>
+        <div class="upload-help" id="uploadHelp">atau klik untuk memilih file .xlsx, .xls, atau .csv</div>
+        <div class="upload-error" id="uploadError"></div>
         <div class="fileacts">
-          <button class="linkbtn">✎ Edit File</button>
-          <button class="btn solid sm" id="validateBtn">Validate Inquiries</button>
+          <button type="button" class="linkbtn" id="chooseFileBtn">Pilih File</button>
+          <button type="button" class="btn solid sm" id="validateBtn" disabled>Validate Inquiries</button>
         </div>
       </div>
 
@@ -721,6 +734,8 @@ tr.newrow{background:var(--green-soft)!important;animation:flash 1.6s ease}
   </div>
 </div>
 <div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="app.js"></script>
+<script src="upload.js"></script>
 </body>
 </html>
